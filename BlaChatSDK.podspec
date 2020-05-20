@@ -17,7 +17,7 @@ Pod::Spec.new do |spec|
   spec.source           = { :git => 'https://github.com/nhoxkem96/BlaChatSDK.git', :tag => spec.version }
 
 
-  spec.source_files     = 'Classes/*.{h,m,swift}'
+  spec.source_files     = 'BlaChatSDK/*.swift'
   spec.exclude_files    = "Classes/Exclude"
 
   spec.dependency "Alamofire", "~> 4.7.3"

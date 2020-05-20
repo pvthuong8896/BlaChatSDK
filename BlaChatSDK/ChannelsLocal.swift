@@ -73,7 +73,6 @@ class ChannelsLocal: NSObject {
                 self.custom_data <- customData
             )
             let channel = try DbConnection.shareInstance.connection?.run(insert)
-            print("Insert channel success", channel)
         } catch {
             print("insert channel error ", error)
         }
@@ -202,7 +201,6 @@ class ChannelsLocal: NSObject {
             let update = channelFilter.update(setter)
             
             let result = try DbConnection.shareInstance.connection?.run(update)
-            print("Update channel success ", result)
         } catch {
             print("Update channel error ", error)
         }

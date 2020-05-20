@@ -70,7 +70,6 @@ class UsersLocal: NSObject {
                 self.avatar <- avatar
             )
             let channel = try DbConnection.shareInstance.connection?.run(insert)
-            print("Insert user success", channel)
         } catch {
             print("insert channel error ", error)
         }
@@ -93,7 +92,6 @@ class UsersLocal: NSObject {
                 let update = filter.update(setter)
                 
                 let result = try DbConnection.shareInstance.connection?.run(update)
-                print("Update user success ", result)
             }
         } catch {
             print("Update channel error ", error)
