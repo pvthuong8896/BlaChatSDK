@@ -21,7 +21,6 @@
 		4C6E4D24246D53C00079102A /* ChannelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D21246D53C00079102A /* ChannelModels.swift */; };
 		4C6E4D25246D53C00079102A /* MessageModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D22246D53C00079102A /* MessageModels.swift */; };
 		4C6E4D29246D53C80079102A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D27246D53C70079102A /* Constants.swift */; };
-		4C6E4D2A246D53C80079102A /* BlaUserStatusDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D28246D53C70079102A /* BlaUserStatusDAO.swift */; };
 		4C6E4D32246D53DC0079102A /* Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D2C246D53DC0079102A /* Delegate.swift */; };
 		4C6E4D33246D53DC0079102A /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D2D246D53DC0079102A /* Helpers.swift */; };
 		4C6E4D34246D53DC0079102A /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6E4D2E246D53DC0079102A /* Subscription.swift */; };
@@ -65,7 +64,6 @@
 		4C6E4D21246D53C00079102A /* ChannelModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelModels.swift; sourceTree = "<group>"; };
 		4C6E4D22246D53C00079102A /* MessageModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageModels.swift; sourceTree = "<group>"; };
 		4C6E4D27246D53C70079102A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		4C6E4D28246D53C70079102A /* BlaUserStatusDAO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlaUserStatusDAO.swift; sourceTree = "<group>"; };
 		4C6E4D2C246D53DC0079102A /* Delegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Delegate.swift; sourceTree = "<group>"; };
 		4C6E4D2D246D53DC0079102A /* Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		4C6E4D2E246D53DC0079102A /* Subscription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
@@ -173,7 +171,6 @@
 			isa = PBXGroup;
 			children = (
 				4C6E4D27246D53C70079102A /* Constants.swift */,
-				4C6E4D28246D53C70079102A /* BlaUserStatusDAO.swift */,
 			);
 			path = Constants;
 			sourceTree = "<group>";
@@ -399,7 +396,6 @@
 				4C6E4D5A246D53F50079102A /* BlaUserInChannelDAO.swift in Sources */,
 				4C6E4D58246D53F50079102A /* BlaMessageDAO.swift in Sources */,
 				4C6E4D1D246D53B10079102A /* BlaUser.swift in Sources */,
-				4C6E4D2A246D53C80079102A /* BlaUserStatusDAO.swift in Sources */,
 				4C6E4D0F246D53A90079102A /* CentrifugoController.swift in Sources */,
 				4C6E4D4C246D53EF0079102A /* UsersLocal.swift in Sources */,
 				4C6E4D25246D53C00079102A /* MessageModels.swift in Sources */,
