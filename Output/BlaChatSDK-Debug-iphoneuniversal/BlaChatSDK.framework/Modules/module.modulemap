@@ -1,0 +1,11 @@
+framework module BlaChatSDK {
+  umbrella header "BlaChatSDK.h"
+
+  export *
+  module * { export * }
+}
+
+module BlaChatSDK.Swift {
+    header "BlaChatSDK-Swift.h"
+    requires objc
+}
