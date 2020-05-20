@@ -14,15 +14,16 @@ Pod::Spec.new do |spec|
 
   spec.author           = { "Phung Van Thuong" => "pvthuong8896@gmail.com" }
 
-  spec.source           = { :path => '.' }
+  spec.source           = { :git => 'https://github.com/nhoxkem96/BlaChatSDK.git', :tag => spec.version }
 
 
-  spec.source_files     = "Classes", "Classes/**/*.{h,m}"
+  spec.source_files     = "Sources/BlaChatSDK/*.swift"
   spec.exclude_files    = "Classes/Exclude"
 
   spec.dependency "Alamofire", "~> 4.7.3"
   spec.dependency "SQLite.swift", "~> 0.12.0"
-  spec.dependency "SwiftCentrifuge", :path => "./"
   spec.dependency "SwiftyJSON"
+  spec.dependency 'SwiftProtobuf'
+  spec.dependency 'Starscream', '~> 3'
 
 end

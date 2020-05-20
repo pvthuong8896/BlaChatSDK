@@ -5,9 +5,9 @@ target 'BlaChatSDK' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
   pod 'SwiftyJSON'
-  pod 'SwiftCentrifuge', :path => './'
   pod 'SQLite.swift', '~> 0.12.0'
   pod 'Alamofire', '~> 4.7.3'
+  
   # Pods for BlaChatSDK
 
 end
