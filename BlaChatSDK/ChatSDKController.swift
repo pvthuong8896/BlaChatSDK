@@ -11,24 +11,24 @@ import UIKit
 import SwiftyJSON
 
 public protocol BlaMessageDelegate: NSObjectProtocol {
-    func onNewMessage(message: BlaMessage)
-    func onUpdateMessage(message: BlaMessage)
-    func onDeleteMessage(message: BlaMessage)
-    func onUserSeen(message: BlaMessage, user: BlaUser, seenAt: Date)
-    func onUserReceive(message: BlaMessage, user: BlaUser, sentAt: Date)
+    public func onNewMessage(message: BlaMessage)
+    public func onUpdateMessage(message: BlaMessage)
+    public func onDeleteMessage(message: BlaMessage)
+    public func onUserSeen(message: BlaMessage, user: BlaUser, seenAt: Date)
+    public func onUserReceive(message: BlaMessage, user: BlaUser, sentAt: Date)
 }
 
 public protocol BlaChannelDelegate: NSObjectProtocol {
-    func onNewChannel(channel: BlaChannel)
-    func onUpdateChannel(channel: BlaChannel)
-    func onDeleteChannel(channel: BlaChannel)
-    func onTyping(channel: BlaChannel, user: BlaUser, type: BlaEventType)
-    func onMemberJoin(channel: BlaChannel, user: BlaUser)
-    func onMemberLeave(channel: BlaChannel, user: BlaUser)
+    public func onNewChannel(channel: BlaChannel)
+    public func onUpdateChannel(channel: BlaChannel)
+    public func onDeleteChannel(channel: BlaChannel)
+    public func onTyping(channel: BlaChannel, user: BlaUser, type: BlaEventType)
+    public func onMemberJoin(channel: BlaChannel, user: BlaUser)
+    public func onMemberLeave(channel: BlaChannel, user: BlaUser)
 }
 
 public protocol BlaPresenceListener: NSObjectProtocol {
-    func onUpdate(userPresence: [BlaUserPresence])
+    public func onUpdate(userPresence: [BlaUserPresence])
 }
 
 public class ChatSDK: NSObject {
