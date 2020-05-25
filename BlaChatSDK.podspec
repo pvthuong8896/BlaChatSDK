@@ -3,9 +3,9 @@ Pod::Spec.new do |spec|
 
   spec.name             = "BlaChatSDK"
   spec.module_name      = "BlaChatSDK"
-  spec.version          = "0.0.3"
+  spec.version          = "0.0.4"
   spec.swift_version    = "4.2"
-  spec.platform         = :ios, "10.0"
+  spec.platform         = :ios, "8.0"
   spec.summary          = "BlaChatSDK for iOS client"
 
   spec.homepage         = "http://blameo.com/"
