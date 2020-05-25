@@ -9,7 +9,7 @@
 import UIKit
 import SwiftyJSON
 
-public class BlaUser: NSObject {
+public class BlaUser: Codable {
     public var id: String?
     public var name: String?
     public var avatar: String?

@@ -9,7 +9,7 @@
 import UIKit
 import SwiftyJSON
 
-public class BlaMessage: NSObject {
+public class BlaMessage: Codable {
     public var id: String?
     public var authorId: String?
     public var channelId: String?
