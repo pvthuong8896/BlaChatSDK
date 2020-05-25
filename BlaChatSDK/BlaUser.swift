@@ -33,3 +33,4 @@ public class BlaUser: Codable {
         self.avatar = json["avatar"].stringValue
     }
 }
+
