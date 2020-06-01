@@ -24,7 +24,7 @@ public class BlaMessage: Codable {
     public var receivedBy = [BlaUser]()
     public var seenBy = [BlaUser]()
     
-    init(dao: BlaMessageDAO) {
+    public init(dao: BlaMessageDAO) {
         self.id = dao.id
         self.authorId = dao.authorId
         self.channelId = dao.channelId

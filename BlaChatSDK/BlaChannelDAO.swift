@@ -20,7 +20,7 @@ public class BlaChannelDAO: NSObject {
     public var customData: String?
     public var lastMessages: [BlaMessageDAO]?
     
-    init(json: JSON) {
+    public init(json: JSON) {
         id = json["id"].stringValue
         name = json["name"].stringValue
         avatar = json["avatar"].stringValue

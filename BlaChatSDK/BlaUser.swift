@@ -27,7 +27,7 @@ public class BlaUser: Codable {
         self.customData = customData
     }
     
-    init(_ json: JSON) {
+    public init(_ json: JSON) {
         self.id = json["id"].stringValue
         self.name = json["name"].stringValue
         self.avatar = json["avatar"].stringValue

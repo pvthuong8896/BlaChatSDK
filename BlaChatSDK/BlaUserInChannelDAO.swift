@@ -8,6 +8,6 @@
 
 import UIKit
 
-class BlaUserInChannelDAO: NSObject {
+public class BlaUserInChannelDAO: NSObject {
 
 }

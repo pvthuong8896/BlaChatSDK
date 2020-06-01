@@ -20,7 +20,7 @@ public class BlaChannel: Codable {
     public var lastMessage: BlaMessage?
     public var lastMessageId: String?
     
-    init(dao: BlaChannelDAO) {
+    public init(dao: BlaChannelDAO) {
         self.id = dao.id
         self.name = dao.name
         self.avatar = dao.avatar

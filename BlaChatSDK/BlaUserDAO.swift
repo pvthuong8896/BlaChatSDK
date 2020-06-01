@@ -17,7 +17,7 @@ public class BlaUserDAO: NSObject {
     public var createAt: Date?
     public var customData: String?
     
-    init(json: JSON) {
+    public init(json: JSON) {
         id = json[""].stringValue
         name = json[""].stringValue
         avatar = json[""].stringValue

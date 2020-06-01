@@ -34,7 +34,7 @@ public class BlaUserInChannel: Codable {
         }
     }
     
-    init(json: JSON, channelId: String) {
+    public init(json: JSON, channelId: String) {
         self.channelId = channelId
         self.userId = json["member_id"].stringValue
         self.lastReceive = Date.init(timeIntervalSince1970: json["last_receive"].doubleValue)
