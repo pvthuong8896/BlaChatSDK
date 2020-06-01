@@ -9,16 +9,16 @@
 import UIKit
 import SwiftyJSON
 
-class BlaMessageDAO: NSObject {
-    var id: String?
-    var authorId: String?
-    var channelId: String?
-    var content: String?
-    var type: Int?
-    var isSystemMessage: Bool?
-    var createdAt: Date?
-    var sentAt: Date?
-    var customData: String?
+public class BlaMessageDAO: NSObject {
+    public var id: String?
+    public var authorId: String?
+    public var channelId: String?
+    public var content: String?
+    public var type: Int?
+    public var isSystemMessage: Bool?
+    public var createdAt: Date?
+    public var sentAt: Date?
+    public var customData: String?
     
     init(json: JSON) {
         id = json["id"].stringValue

@@ -9,13 +9,13 @@
 import UIKit
 import SwiftyJSON
 
-class BlaUserDAO: NSObject {
-    var id: String?
-    var name: String?
-    var avatar: String?
-    var updateAt: Date?
-    var createAt: Date?
-    var customData: String?
+public class BlaUserDAO: NSObject {
+    public var id: String?
+    public var name: String?
+    public var avatar: String?
+    public var updateAt: Date?
+    public var createAt: Date?
+    public var customData: String?
     
     init(json: JSON) {
         id = json[""].stringValue

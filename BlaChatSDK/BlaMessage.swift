@@ -15,6 +15,7 @@ public class BlaMessage: Codable {
     public var channelId: String?
     public var content: String?
     public var type: Int?
+    public var isSystemMessage: Bool?
     public var createdAt: Date?
     public var updatedAt: Date?
     public var sentAt: Date?
@@ -28,6 +29,7 @@ public class BlaMessage: Codable {
         self.authorId = dao.authorId
         self.channelId = dao.channelId
         self.content = dao.content
+        self.isSystemMessage = dao.isSystemMessage
         self.type = dao.type
         self.customData = dao.customData
         self.createdAt = dao.createdAt
