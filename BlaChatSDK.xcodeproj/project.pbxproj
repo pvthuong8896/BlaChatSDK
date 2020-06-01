@@ -26,7 +26,6 @@
 		4C3A0F2F2475226E00DC010B /* ChannelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F0B2475226D00DC010B /* ChannelModels.swift */; };
 		4C3A0F302475226E00DC010B /* ChatSDKController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F0C2475226D00DC010B /* ChatSDKController.swift */; };
 		4C3A0F312475226E00DC010B /* BlaChatSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C3A0F0D2475226D00DC010B /* BlaChatSDK.h */; };
-		4C3A0F322475226E00DC010B /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4C3A0F0E2475226D00DC010B /* Info.plist */; };
 		4C3A0F332475226E00DC010B /* UsersRemote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F0F2475226D00DC010B /* UsersRemote.swift */; };
 		4C3A0F342475226E00DC010B /* client.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F102475226D00DC010B /* client.pb.swift */; };
 		4C3A0F352475226E00DC010B /* BlaMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F112475226D00DC010B /* BlaMessage.swift */; };
@@ -259,7 +258,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C3A0F322475226E00DC010B /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

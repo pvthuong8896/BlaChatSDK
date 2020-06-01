@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class BlaUserPresence: NSObject {
+public class BlaUserPresence: Codable {
     public var user: BlaUser?
     public var state: BlaPresenceState
     

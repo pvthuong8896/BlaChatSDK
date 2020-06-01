@@ -10,7 +10,7 @@
 import UIKit
 import SwiftyJSON
 
-public class BlaUserStatus: NSObject {
+public class BlaUserStatus: Codable {
     public var userId: String?
     public var isOnline = false
     

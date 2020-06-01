@@ -15,7 +15,7 @@ public protocol BlaMessageDelegate: NSObjectProtocol {
     func onUpdateMessage(message: BlaMessage)
     func onDeleteMessage(message: BlaMessage)
     func onUserSeen(message: BlaMessage, user: BlaUser, seenAt: Date)
-    func onUserReceive(message: BlaMessage, user: BlaUser, sentAt: Date)
+    func onUserReceive(message: BlaMessage, user: BlaUser, receivedAt: Date)
 }
 
 public protocol BlaChannelDelegate: NSObjectProtocol {
@@ -480,7 +480,7 @@ extension ChatSDK: CentrifugoControllerDelegate {
                     self.addInfoMessages(messages: [mess]) { (messages) in
                         self.userModels.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
-                                item.onUserReceive(message: messages[0], user: user, sentAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                                item.onUserReceive(message: messages[0], user: user, receivedAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                             }
                         }
                     }

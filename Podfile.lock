@@ -1,21 +1,12 @@
 PODS:
   - Alamofire (4.7.3)
-  - BlaChatSDK (0.0.1):
-    - Alamofire (~> 4.7.3)
-    - SQLite.swift (~> 0.12.0)
-    - Starscream (~> 3)
-    - SwiftProtobuf
-    - SwiftyJSON
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
-  - Starscream (3.1.1)
-  - SwiftProtobuf (1.8.0)
   - SwiftyJSON (5.0.0)
 
 DEPENDENCIES:
   - Alamofire (~> 4.7.3)
-  - BlaChatSDK (from `./`)
   - SQLite.swift (~> 0.12.0)
   - SwiftyJSON
 
@@ -23,22 +14,13 @@ SPEC REPOS:
   trunk:
     - Alamofire
     - SQLite.swift
-    - Starscream
-    - SwiftProtobuf
     - SwiftyJSON
-
-EXTERNAL SOURCES:
-  BlaChatSDK:
-    :path: "./"
 
 SPEC CHECKSUMS:
   Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
-  BlaChatSDK: d59397613aaca6ace72785136bcd3aaa4be07f2d
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
-  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
-  SwiftProtobuf: 2cbd9409689b7df170d82a92a33443c8e3e14a70
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
 
-PODFILE CHECKSUM: 7b65fcfaa34b3632bf249f8be70ba125f09aaab8
+PODFILE CHECKSUM: d3c32d280e9bf05928b71d941c56317c01d44867
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.2
