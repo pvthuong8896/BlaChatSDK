@@ -64,6 +64,7 @@ public class BlaMessage: Codable {
         if let custom_data = custom_data {
             self.customData = custom_data
         }
+        self.isSystemMessage = false
     }
     
     public init(id: String, content: String) {
