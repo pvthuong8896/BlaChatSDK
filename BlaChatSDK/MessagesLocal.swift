@@ -21,6 +21,7 @@ class MessagesLocal: NSObject {
     private let id = Expression<String?>("id")
     private let author_id = Expression<String?>("author_id")
     private let channel_id = Expression<String?>("channel_id")
+    private let is_system_message = Expression<Bool?>("is_system_message")
     private let content = Expression<String?>("content")
     private let type = Expression<Int?>("type")
     private let created_at = Expression<Double?>("created_at")
@@ -43,6 +44,7 @@ class MessagesLocal: NSObject {
                     table.column(self.channel_id)
                     table.column(self.content)
                     table.column(self.type)
+                    table.column(self.is_system_message)
                     table.column(self.created_at)
                     table.column(self.updated_at)
                     table.column(self.sent_at)
@@ -63,7 +65,7 @@ class MessagesLocal: NSObject {
             var listMessages = [BlaMessage]()
             if let sequence: AnySequence<Row> = messsages {
                 for row in sequence {
-                    listMessages.append(BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data]))
+                    listMessages.append(BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], is_system_message: row[self.is_system_message], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data]))
                 }
             }
             completion(listMessages, nil)
@@ -72,7 +74,7 @@ class MessagesLocal: NSObject {
         }
     }
     
-    func insertMessage(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, created_at: Date?, updated_at: Date?, sent_at: Date?, custom_data: String?, completion: @escaping(Bool?, Error?) -> Void) {
+    func insertMessage(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, created_at: Date?, updated_at: Date?, sent_at: Date?, custom_data: String?, isSystemMessage: Bool?, completion: @escaping(Bool?, Error?) -> Void) {
         do {
             let insert = tblMessage.insert(
                 self.id <- id,
@@ -83,7 +85,8 @@ class MessagesLocal: NSObject {
                 self.created_at <- created_at?.timeIntervalSince1970,
                 self.updated_at <- updated_at?.timeIntervalSince1970,
                 self.sent_at <- sent_at?.timeIntervalSince1970,
-                self.custom_data <- custom_data
+                self.custom_data <- custom_data,
+                self.is_system_message <- isSystemMessage
             )
             try DbConnection.shareInstance.connection?.run(insert)
             completion(true, nil)
@@ -131,7 +134,7 @@ class MessagesLocal: NSObject {
             var listMessages = [BlaMessage]()
             if let sequence: AnySequence<Row> = messsages {
                 for row in sequence {
-                    listMessages.append(BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data]))
+                    listMessages.append(BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], is_system_message: row[self.is_system_message], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data]))
                 }
             }
             completion(listMessages, nil)
@@ -146,7 +149,7 @@ class MessagesLocal: NSObject {
             let filter = tblMessage.filter(self.id == messageId)
             let result = try DbConnection.shareInstance.connection?.pluck(filter)
             if let row = result {
-                let message = BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data])
+                let message = BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], is_system_message: row[self.is_system_message], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data])
                 completion(message, nil)
             }
         } catch {
@@ -195,7 +198,7 @@ class MessagesLocal: NSObject {
                 self.updateMessage(message: message) { (result, error) in
                 }
             } else {
-                self.insertMessage(id: message.id, author_id: message.authorId, channel_id: message.channelId, content: message.content, type: message.type, created_at: message.createdAt, updated_at: message.updatedAt, sent_at: message.sentAt, custom_data: message.customData) { (message, error) in
+                self.insertMessage(id: message.id, author_id: message.authorId, channel_id: message.channelId, content: message.content, type: message.type, created_at: message.createdAt, updated_at: message.updatedAt, sent_at: message.sentAt, custom_data: message.customData, isSystemMessage: message.isSystemMessage) { (message, error) in
                 }
             }
         } catch {

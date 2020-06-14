@@ -16,7 +16,7 @@ class MessageModels: NSObject {
     func sendMessage(channelId: String, type: Int, message: String, completion: @escaping(BlaMessage?, Error?) -> Void) {
         let userId = UserDefaults.standard.string(forKey: "userId")
         let tmpId = UUID().uuidString
-        messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: nil) { (messLocal, error) in
+        messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: nil, isSystemMessage: false) { (messLocal, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -25,7 +25,7 @@ class MessageModels: NSObject {
                 let sentAt = Date().timeIntervalSince1970
                 self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: sentAt) { (json, error) in
                     if let err = error {
-                        completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: sentAt, updated_at: sentAt, sent_at: nil, custom_data: nil), err)
+                        completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: sentAt, updated_at: sentAt, sent_at: nil, custom_data: nil), err)
                     }
                     if let json = json {
                         let dao = BlaMessageDAO(json: json["data"])

@@ -7,7 +7,8 @@ target 'BlaChatSDK' do
   pod 'SwiftyJSON'
   pod 'SQLite.swift', '~> 0.12.0'
   pod 'Alamofire', '~> 4.7.3'
-  
+  pod 'SwiftProtobuf'
+  pod 'Starscream', '~> 3'
   # Pods for BlaChatSDK
 
 end

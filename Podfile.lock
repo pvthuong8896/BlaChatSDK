@@ -3,24 +3,32 @@ PODS:
   - SQLite.swift (0.12.2):
     - SQLite.swift/standard (= 0.12.2)
   - SQLite.swift/standard (0.12.2)
+  - Starscream (3.1.1)
+  - SwiftProtobuf (1.9.0)
   - SwiftyJSON (5.0.0)
 
 DEPENDENCIES:
   - Alamofire (~> 4.7.3)
   - SQLite.swift (~> 0.12.0)
+  - Starscream (~> 3)
+  - SwiftProtobuf
   - SwiftyJSON
 
 SPEC REPOS:
   trunk:
     - Alamofire
     - SQLite.swift
+    - Starscream
+    - SwiftProtobuf
     - SwiftyJSON
 
 SPEC CHECKSUMS:
   Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
   SQLite.swift: d2b4642190917051ce6bd1d49aab565fe794eea3
+  Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
+  SwiftProtobuf: ecbec1be9036d15655f6b3443a1c4ea693c97932
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
 
-PODFILE CHECKSUM: d3c32d280e9bf05928b71d941c56317c01d44867
+PODFILE CHECKSUM: dd1b1009ff08e018b96de41639296094aa0a98d0
 
-COCOAPODS: 1.9.2
+COCOAPODS: 1.9.3

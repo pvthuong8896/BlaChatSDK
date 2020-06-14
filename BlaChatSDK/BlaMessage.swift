@@ -36,7 +36,7 @@ public class BlaMessage: Codable {
         self.sentAt = dao.sentAt
     }
     
-    public init(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, created_at: Double?, updated_at: Double?, sent_at: Double?, custom_data: String?) {
+    public init(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, is_system_message: Bool?, created_at: Double?, updated_at: Double?, sent_at: Double?, custom_data: String?) {
         if let id = id {
             self.id = id
         }
@@ -64,7 +64,9 @@ public class BlaMessage: Codable {
         if let custom_data = custom_data {
             self.customData = custom_data
         }
-        self.isSystemMessage = false
+        if let isSystemMessage = is_system_message {
+            self.isSystemMessage = isSystemMessage
+        }
     }
     
     public init(id: String, content: String) {

@@ -33,6 +33,7 @@ class ChannelsLocal: NSObject {
     private let channel_id = Expression<String?>("channel_id")
     private let content = Expression<String?>("content")
     private let sent_at = Expression<Double?>("sent_at")
+    private let is_system_message = Expression<Bool?>("is_system_message")
     
     override init() {
         super.init()
@@ -114,12 +115,13 @@ class ChannelsLocal: NSObject {
                         let messageChannelId = try row.get(tblMessage[channel_id])
                         let messageContent = try row.get(tblMessage[content])
                         let messageType = try row.get(tblMessage[type])
+                        let isSystemMessage = try row.get(tblMessage[is_system_message])
                         let messageCreatedAt = try row.get(tblMessage[created_at])
                         let messageUpdatedAt = try row.get(tblMessage[updated_at])
                         let messageSentAt = try row.get(tblMessage[sent_at])
                         let messageCustomData = try row.get(tblMessage[custom_data])
                         
-                        let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
+                        let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, is_system_message: isSystemMessage, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
                         
                         channel.lastMessage = message
                     }
@@ -161,12 +163,13 @@ class ChannelsLocal: NSObject {
                     let messageChannelId = try row.get(tblMessage[channel_id])
                     let messageContent = try row.get(tblMessage[content])
                     let messageType = try row.get(tblMessage[type])
+                    let isSystemMessage = try row.get(tblMessage[is_system_message])
                     let messageCreatedAt = try row.get(tblMessage[created_at])
                     let messageUpdatedAt = try row.get(tblMessage[updated_at])
                     let messageSentAt = try row.get(tblMessage[sent_at])
                     let messageCustomData = try row.get(tblMessage[custom_data])
 
-                    let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
+                    let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, is_system_message: isSystemMessage, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
 
                     channel.lastMessage = message
                     completion(channel, nil)
