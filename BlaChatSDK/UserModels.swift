@@ -22,6 +22,11 @@ class UserModels: NSObject {
         }
     }
     
+    func saveUser(user: BlaUser) {
+        
+        userLocal.saveUser(user: user)
+    }
+    
     func setUserStatus(userId: String) {
         userRemote.setUserOnline(userId: userId) { (json, erro) in
         }

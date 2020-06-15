@@ -69,7 +69,7 @@ class UsersLocal: NSObject {
                 self.name <- name,
                 self.avatar <- avatar
             )
-            let channel = try DbConnection.shareInstance.connection?.run(insert)
+            try DbConnection.shareInstance.connection?.run(insert)
         } catch {
             print("insert channel error ", error)
         }
@@ -90,8 +90,7 @@ class UsersLocal: NSObject {
             }
             if setter.count > 0 {
                 let update = filter.update(setter)
-                
-                let result = try DbConnection.shareInstance.connection?.run(update)
+                try DbConnection.shareInstance.connection?.run(update)
             }
         } catch {
             print("Update channel error ", error)

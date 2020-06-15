@@ -213,4 +213,16 @@ class MessagesLocal: NSObject {
             print("remove message error")
         }
     }
+    
+    func countMessageNotSeen(channelId: String, lastSeen: Double, completion: @escaping (Int?, Error?) -> Void) {
+        do {
+//            let filter = tblMessage.filter(self.channel_id == channelId && self.sent_at > lastSeen).count
+//            let result = try DbConnection.shareInstance.connection?.run(filter)
+            let filter = tblMessage.filter(self.channel_id == channelId && self.sent_at > lastSeen).count
+            print("result count message " , filter)
+            completion(0, nil)
+        } catch {
+            print("error count meesage")
+        }
+    }
 }

@@ -28,7 +28,7 @@ public protocol BlaChannelDelegate: NSObjectProtocol {
 }
 
 public protocol BlaPresenceListener: NSObjectProtocol {
-    func onUpdate(userPresence: [BlaUserPresence])
+    func onUpdate(userPresence: [BlaUser])
 }
 
 public class ChatSDK: NSObject {
@@ -49,11 +49,6 @@ public class ChatSDK: NSObject {
     
     override init() {
         super.init()
-        self.userId = UserDefaults.standard.string(forKey: "userId")
-        self.token = UserDefaults.standard.string(forKey: "token")
-        CentrifugoController.shareInstance.delegate = self
-        self.getAllUser()
-        self.syncMessage()
     }
     
     public static var shareInstance: ChatSDK = {
@@ -61,13 +56,26 @@ public class ChatSDK: NSObject {
         return instance
     }()
     
+    public func initBlaChatSDK(userId: String, token: String, completion: @escaping (Bool?, Error?) -> Void) {
+        UserDefaults.standard.setValue(userId, forKey: "userId")
+        UserDefaults.standard.setValue(token, forKey: "token")
+        self.userId = userId
+        self.token = token
+        self.getAllUser()
+        CentrifugoController.shareInstance.delegate = self
+        self.getAllUser()
+        self.syncMessage()
+    }
     
     private func intervalSetOnline() {
-        let timer = Timer.scheduledTimer(withTimeInterval: Constants.intervalTime, repeats: true) { (timer) in
+        let timer = Timer.scheduledTimer(withTimeInterval: Constants.intervalSetOnlineTime, repeats: true) { (timer) in
             self.userModels.setUserStatus(userId: self.userId!)
-            self.intervalGetStatusUser()
         }
         timer.fire()
+        let timer2 = Timer.scheduledTimer(withTimeInterval: Constants.intervalGetPresenceTime, repeats: true) { (timer) in
+            self.intervalGetStatusUser()
+        }
+        timer2.fire()
     }
     
     private func intervalGetStatusUser() {
@@ -77,15 +85,14 @@ public class ChatSDK: NSObject {
         }
         self.userModels.getStatusUserByIds(userIds: userIds) { (result, error) in
             if let result = result {
-                var userPresences = [BlaUserPresence]()
+                var userPresences = [BlaUser]()
                 for (index,user) in CacheRepository.shareInstance.validUsers.enumerated() {
                     if let indexStatus = result.firstIndex(where: {$0.userId == user.id && $0.isOnline != user.online}) {
+                        let userx = BlaUser(id: CacheRepository.shareInstance.validUsers[index].id, name: CacheRepository.shareInstance.validUsers[index].name, avatar: CacheRepository.shareInstance.validUsers[index].avatar, lastActiveAt: Date().timeIntervalSince1970, customData: nil)
                         CacheRepository.shareInstance.validUsers[index].online = result[indexStatus].isOnline
-                        if result[indexStatus].isOnline {
-                            userPresences.append(BlaUserPresence(user: CacheRepository.shareInstance.validUsers[index], state: BlaPresenceState.ONLINE))
-                        } else {
-                            userPresences.append(BlaUserPresence(user: CacheRepository.shareInstance.validUsers[index], state: BlaPresenceState.OFFLINE))
-                        }
+                        CacheRepository.shareInstance.validUsers[index].lastActiveAt = Date()
+                        userPresences.append(userx)
+                        self.userModels.saveUser(user: CacheRepository.shareInstance.validUsers[index])
                     }
                 }
                 for delegate in self.presenceDelegates {
@@ -141,7 +148,7 @@ public class ChatSDK: NSObject {
                     completion(result, nil)
                 }
             } else {
-                completion(channels, error)
+                completion(nil, error)
             }
         }
     }
@@ -269,23 +276,26 @@ public class ChatSDK: NSObject {
         }
     }
     
-    public func getUserPresence(completion: @escaping([BlaUserPresence]?, Error?) -> Void) {
+    public func getUserPresence(completion: @escaping([BlaUser]?, Error?) -> Void) {
         var userIds = [String]()
         for item in CacheRepository.shareInstance.validUsers {
             userIds.append(item.id!)
         }
         self.userModels.getStatusUserByIds(userIds: userIds) { (result, error) in
-            var userPresences = [BlaUserPresence]()
+            var userPresences = [BlaUser]()
             if let result = result {
                 for (index,user) in CacheRepository.shareInstance.validUsers.enumerated() {
                     if let indexStatus = result.firstIndex(where: {$0.userId == user.id && $0.isOnline != user.online}) {
                         if result[indexStatus].isOnline {
-                            userPresences.append(BlaUserPresence(user: CacheRepository.shareInstance.validUsers[index], state: BlaPresenceState.ONLINE))
+                            CacheRepository.shareInstance.validUsers[index].online = true
+                            userPresences.append(CacheRepository.shareInstance.validUsers[index])
                         } else {
-                            userPresences.append(BlaUserPresence(user: CacheRepository.shareInstance.validUsers[index], state: BlaPresenceState.OFFLINE))
+                            CacheRepository.shareInstance.validUsers[index].online = false
+                            userPresences.append(CacheRepository.shareInstance.validUsers[index])
                         }
                     } else {
-                        userPresences.append(BlaUserPresence(user: CacheRepository.shareInstance.validUsers[index], state: BlaPresenceState.OFFLINE))
+                        CacheRepository.shareInstance.validUsers[index].online = false
+                        userPresences.append(CacheRepository.shareInstance.validUsers[index])
                     }
                 }
             }
@@ -296,6 +306,7 @@ public class ChatSDK: NSObject {
     private func getAllUser() {
         userModels.getAllUser { (users, error) in
             self.intervalSetOnline()
+            self.intervalGetStatusUser()
         }
     }
     
@@ -326,6 +337,7 @@ public class ChatSDK: NSObject {
                     }
                 }
                 self.userModels.getUserByIds(ids: userIds) { (users, error) in
+                    var handleCount = 0
                     for item in channels {
                         if item.type == BlaChannelType.DIRECT.rawValue {
                             let partnerId = userInChannels.first(where: {($0.channelId == item.id) && ($0.userId != self.userId)})?.userId
@@ -350,12 +362,20 @@ public class ChatSDK: NSObject {
                                                 lastMessage.seenBy.append(user)
                                             }
                                         }
+                                        if userInChannel.userId == self.userId {
+                                            self.messageModels.countMessageNotSeen(channelId: item.id!, lastSeen: userInChannel.lastSeen!.timeIntervalSince1970) { (result, error) in
+                                                handleCount += 1
+                                                item.numberMessageNotSeen = result ?? 0
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    completion(channels)
+                    if handleCount == channels.count {
+                        completion(channels)
+                    }
                 }
             } else {
                 completion(channels)

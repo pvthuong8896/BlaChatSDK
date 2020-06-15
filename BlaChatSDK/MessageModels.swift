@@ -155,4 +155,10 @@ class MessageModels: NSObject {
     func deleteMessageLocal(messageId: String) {
         self.messageLocal.removeMessage(messageId: messageId)
     }
+    
+    func countMessageNotSeen(channelId: String, lastSeen: Double, completion: @escaping (Int?, Error?) -> Void) {
+        self.messageLocal.countMessageNotSeen(channelId: channelId, lastSeen: lastSeen) { (result, error) in
+            completion(result, error)
+        }
+    }
 }

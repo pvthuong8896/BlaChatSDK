@@ -11,7 +11,6 @@
 		4C3A0F202475226E00DC010B /* BlaUserStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0EFC2475226C00DC010B /* BlaUserStatus.swift */; };
 		4C3A0F212475226E00DC010B /* ChannelsRemote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0EFD2475226C00DC010B /* ChannelsRemote.swift */; };
 		4C3A0F222475226E00DC010B /* MessagesRemote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0EFE2475226C00DC010B /* MessagesRemote.swift */; };
-		4C3A0F232475226E00DC010B /* BlaUserPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0EFF2475226C00DC010B /* BlaUserPresence.swift */; };
 		4C3A0F242475226E00DC010B /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F002475226C00DC010B /* Types.swift */; };
 		4C3A0F252475226E00DC010B /* CentrifugoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F012475226C00DC010B /* CentrifugoController.swift */; };
 		4C3A0F262475226E00DC010B /* Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F022475226D00DC010B /* Delegate.swift */; };
@@ -53,7 +52,6 @@
 		4C3A0EFC2475226C00DC010B /* BlaUserStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlaUserStatus.swift; sourceTree = "<group>"; };
 		4C3A0EFD2475226C00DC010B /* ChannelsRemote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelsRemote.swift; sourceTree = "<group>"; };
 		4C3A0EFE2475226C00DC010B /* MessagesRemote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessagesRemote.swift; sourceTree = "<group>"; };
-		4C3A0EFF2475226C00DC010B /* BlaUserPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlaUserPresence.swift; sourceTree = "<group>"; };
 		4C3A0F002475226C00DC010B /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		4C3A0F012475226C00DC010B /* CentrifugoController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CentrifugoController.swift; sourceTree = "<group>"; };
 		4C3A0F022475226D00DC010B /* Delegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Delegate.swift; sourceTree = "<group>"; };
@@ -158,7 +156,6 @@
 				4C3A0F1A2475226E00DC010B /* BlaUserInChannel.swift */,
 				4C3A0F142475226D00DC010B /* UserInChannelLocal.swift */,
 				4C3A0F152475226E00DC010B /* BlaUserInChannelDAO.swift */,
-				4C3A0EFF2475226C00DC010B /* BlaUserPresence.swift */,
 				4C3A0EFC2475226C00DC010B /* BlaUserStatus.swift */,
 				4C6E4D03246D45480079102A /* BlaChatSDK.h */,
 				4C6E4D04246D45480079102A /* Info.plist */,
@@ -323,7 +320,6 @@
 				4C3A0F3E2475226E00DC010B /* BlaUserInChannel.swift in Sources */,
 				4C3A0F372475226E00DC010B /* MessagesLocal.swift in Sources */,
 				4C3A0F292475226E00DC010B /* UsersLocal.swift in Sources */,
-				4C3A0F232475226E00DC010B /* BlaUserPresence.swift in Sources */,
 				4C3A0F3A2475226E00DC010B /* Helpers.swift in Sources */,
 				4C3A0F2E2475226E00DC010B /* UserModels.swift in Sources */,
 				4C3A0F222475226E00DC010B /* MessagesRemote.swift in Sources */,

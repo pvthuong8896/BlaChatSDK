@@ -21,8 +21,3 @@ public enum BlaEventType {
     case START
     case STOP
 }
-
-public enum BlaPresenceState: Int {
-    case ONLINE = 2
-    case OFFLINE = 1
-}
