@@ -12,6 +12,7 @@ class MessageModels: NSObject {
     var messageLocal = MessagesLocal()
     var messageRemote = MessagesRemote()
     var channelLocal = ChannelsLocal()
+    var userInChannelLocal = UserInChannelLocal()
     
     func sendMessage(channelId: String, type: Int, message: String, completion: @escaping(BlaMessage?, Error?) -> Void) {
         let userId = UserDefaults.standard.string(forKey: "userId")
@@ -20,12 +21,14 @@ class MessageModels: NSObject {
             if let err = error {
                 completion(nil, err)
             } else {
+                let timeNow = Date().timeIntervalSince1970
                 self.channelLocal.updateLastMessageChannel(channel: BlaChannel(id: channelId, lastMessageId: tmpId, updatedAt: Date())) { (channel, error) in
                 }
-                let sentAt = Date().timeIntervalSince1970
-                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: sentAt) { (json, error) in
+                self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
+                    , lastSeen: timeNow, lastReceive: timeNow))
+                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow) { (json, error) in
                     if let err = error {
-                        completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: sentAt, updated_at: sentAt, sent_at: nil, custom_data: nil), err)
+                        completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
                     }
                     if let json = json {
                         let dao = BlaMessageDAO(json: json["data"])
@@ -103,6 +106,9 @@ class MessageModels: NSObject {
     }
     
     func markReceiveMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+        let userId = UserDefaults.standard.string(forKey: "userId")
+        let timeNow = Date().timeIntervalSince1970
+        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: nil, lastReceive: timeNow))
         messageRemote.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in
             if let err = error {
                 completion(false, err)
@@ -113,6 +119,9 @@ class MessageModels: NSObject {
     }
     
     func markSeenMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+        let userId = UserDefaults.standard.string(forKey: "userId")
+        let timeNow = Date().timeIntervalSince1970
+        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: timeNow, lastReceive: timeNow))
         messageRemote.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in
             if let err = error {
                 completion(false, err)

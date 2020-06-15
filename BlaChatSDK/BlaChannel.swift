@@ -19,6 +19,7 @@ public class BlaChannel: Codable {
     public var customData: String?
     public var lastMessage: BlaMessage?
     public var lastMessageId: String?
+    public var numberMessageNotSeen: Int = 0
     
     public init(dao: BlaChannelDAO) {
         self.id = dao.id

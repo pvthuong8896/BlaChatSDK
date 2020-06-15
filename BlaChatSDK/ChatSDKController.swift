@@ -461,7 +461,7 @@ extension ChatSDK: CentrifugoControllerDelegate {
         case "mark_seen":
             self.messageModels.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
-                    self.channelModels.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue), lastReceive: nil)
+                    self.channelModels.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue), lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                     self.addInfoMessages(messages: [mess]) { (messages) in
                         self.userModels.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
