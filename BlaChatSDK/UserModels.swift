@@ -84,7 +84,7 @@ class UserModels: NSObject {
                                 completion(listUserResult, nil)
                             } else {
                                 for subJson in json!["data"].arrayValue {
-                                    let user = BlaUser(subJson)
+                                    let user = BlaUser(dao: BlaUserDAO.init(json: subJson))
                                     listUserResult.append(user)
                                     CacheRepository.shareInstance.validUsers.append(user)
                                     self.userLocal.saveUser(user: user)
@@ -110,7 +110,7 @@ class UserModels: NSObject {
                             completion(listUserResult, nil)
                         } else {
                             for subJson in json!["data"].arrayValue {
-                                let user = BlaUser(subJson)
+                                let user = BlaUser(dao: BlaUserDAO(json: subJson))
                                 listUserResult.append(user)
                                 CacheRepository.shareInstance.validUsers.append(user)
                                 self.userLocal.saveUser(user: user)

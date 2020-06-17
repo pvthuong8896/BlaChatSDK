@@ -11,7 +11,6 @@ import UIKit
 class CacheRepository: NSObject {
 
     var validUsers = [BlaUser]()
-    var vallidChannels = [BlaChannel]()
     
     static var shareInstance: CacheRepository = {
         let instance = CacheRepository()

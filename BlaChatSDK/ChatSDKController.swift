@@ -230,6 +230,13 @@ public class ChatSDK: NSObject {
     }
     
     public func markSeenMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+        self.channelModels.updateNumberMessageUnread(channelId: channelId, isResetCount: true) {(channel, error) in
+            if let channel = channel {
+                for delegate in self.channelDelegates {
+                    delegate.onUpdateChannel(channel: channel)
+                }
+            }
+        }
         messageModels.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
             completion(result, error)
         }
@@ -337,9 +344,8 @@ public class ChatSDK: NSObject {
                     }
                 }
                 self.userModels.getUserByIds(ids: userIds) { (users, error) in
-                    var handleCount = 0
                     for item in channels {
-                        if item.type == BlaChannelType.DIRECT.rawValue {
+                        if item.type == BlaChannelType.DIRECT {
                             let partnerId = userInChannels.first(where: {($0.channelId == item.id) && ($0.userId != self.userId)})?.userId
                             if partnerId != nil {
                                 let user = users.first(where: {$0.id == partnerId})
@@ -362,20 +368,12 @@ public class ChatSDK: NSObject {
                                                 lastMessage.seenBy.append(user)
                                             }
                                         }
-                                        if userInChannel.userId == self.userId {
-                                            self.messageModels.countMessageNotSeen(channelId: item.id!, lastSeen: userInChannel.lastSeen!.timeIntervalSince1970) { (result, error) in
-                                                handleCount += 1
-                                                item.numberMessageNotSeen = result ?? 0
-                                            }
-                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    if handleCount == channels.count {
-                        completion(channels)
-                    }
+                    completion(channels)
                 }
             } else {
                 completion(channels)
@@ -436,16 +434,31 @@ extension ChatSDK: CentrifugoControllerDelegate {
             let message = BlaMessage(dao: dao)
             channelModels.updateLastMessage(channelId: message.channelId!, lastMessageId: message.id!) { (channel, error) in
             }
+            messageModels.saveMessage(message: message)
+            if (message.authorId != self.userId) {
+                self.markReceiveMessage(messageId: event["payload"]["id"].stringValue, channelId: event["payload"]["channel_id"].stringValue, receiveId: message.authorId!) { (result, error) in
+                }
+                self.channelModels.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: false) {(channel, error) in
+                    if let channel = channel {
+                        for delegate in self.channelDelegates {
+                            delegate.onUpdateChannel(channel: channel)
+                        }
+                    }
+                }
+            } else {
+                self.channelModels.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: true) {(channel, error) in
+                    if let channel = channel {
+                        for delegate in self.channelDelegates {
+                            delegate.onUpdateChannel(channel: channel)
+                        }
+                    }
+                }
+            }
             self.addInfoMessages(messages: [message]) { (result) in
                 if result.count > 0 {
                     for item in self.messageDelegates {
                         item.onNewMessage(message: result[0])
                     }
-                }
-            }
-            messageModels.saveMessage(message: message)
-            if (message.authorId != self.userId) {
-                self.markReceiveMessage(messageId: event["payload"]["id"].stringValue, channelId: event["payload"]["channel_id"].stringValue, receiveId: message.authorId!) { (result, error) in
                 }
             }
             break;

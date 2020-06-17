@@ -74,8 +74,17 @@ class MessagesLocal: NSObject {
         }
     }
     
-    func insertMessage(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, created_at: Date?, updated_at: Date?, sent_at: Date?, custom_data: String?, isSystemMessage: Bool?, completion: @escaping(Bool?, Error?) -> Void) {
+    func insertMessage(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, created_at: Date?, updated_at: Date?, sent_at: Date?, custom_data: [String: Any]?, isSystemMessage: Bool?, completion: @escaping(Bool?, Error?) -> Void) {
         do {
+            var customDataString = ""
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: custom_data,
+              options: .prettyPrinted
+              ),
+              let jsonString = String(data: theJSONData,
+                                       encoding: String.Encoding.utf8) {
+                customDataString = jsonString
+            }
             let insert = tblMessage.insert(
                 self.id <- id,
                 self.author_id <- author_id,
@@ -85,7 +94,7 @@ class MessagesLocal: NSObject {
                 self.created_at <- created_at?.timeIntervalSince1970,
                 self.updated_at <- updated_at?.timeIntervalSince1970,
                 self.sent_at <- sent_at?.timeIntervalSince1970,
-                self.custom_data <- custom_data,
+                self.custom_data <- customDataString,
                 self.is_system_message <- isSystemMessage
             )
             try DbConnection.shareInstance.connection?.run(insert)
@@ -102,16 +111,25 @@ class MessagesLocal: NSObject {
                 let resultFilter = try DbConnection.shareInstance.connection?.pluck(filter)
                 if let _ = resultFilter {
                     let messageFilter = tblMessage.filter(self.id == idLocal)
+                    var customData = ""
+                    if let theJSONData = try?  JSONSerialization.data(
+                        withJSONObject: message.customData,
+                      options: .prettyPrinted
+                      ),
+                      let theJSONText = String(data: theJSONData,
+                                               encoding: String.Encoding.utf8) {
+                        customData = theJSONText
+                    }
                     let update = messageFilter.update(
                         self.id <- message.id,
                         self.author_id <- message.authorId,
                         self.channel_id <- message.channelId,
                         self.content <- message.content,
-                        self.type <- message.type,
+                        self.type <- message.type?.rawValue ?? 0,
                         self.created_at <- message.createdAt?.timeIntervalSince1970,
                         self.updated_at <- message.updatedAt?.timeIntervalSince1970,
                         self.sent_at <- message.sentAt?.timeIntervalSince1970,
-                        self.custom_data <- message.customData
+                        self.custom_data <- customData
                     )
                     try DbConnection.shareInstance.connection?.run(update)
                 }
@@ -172,15 +190,20 @@ class MessagesLocal: NSObject {
             if let content = message.content {
                 setter.append(self.content <- content)
             }
-            if let type = message.type {
+            if let type = message.type?.rawValue {
                 setter.append(self.type <- type)
             }
             setter.append(self.updated_at <- Date().timeIntervalSince1970)
             if let sent_at = message.sentAt {
                 setter.append(self.sent_at <- sent_at.timeIntervalSince1970)
             }
-            if let custom_data = message.customData {
-                setter.append(self.custom_data <- custom_data)
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: message.customData,
+              options: .prettyPrinted
+              ),
+              let customData = String(data: theJSONData,
+                                       encoding: String.Encoding.utf8) {
+                setter.append(self.custom_data <- customData)
             }
             let update = mesageFilter.update(setter)
             
@@ -198,7 +221,7 @@ class MessagesLocal: NSObject {
                 self.updateMessage(message: message) { (result, error) in
                 }
             } else {
-                self.insertMessage(id: message.id, author_id: message.authorId, channel_id: message.channelId, content: message.content, type: message.type, created_at: message.createdAt, updated_at: message.updatedAt, sent_at: message.sentAt, custom_data: message.customData, isSystemMessage: message.isSystemMessage) { (message, error) in
+                self.insertMessage(id: message.id, author_id: message.authorId, channel_id: message.channelId, content: message.content, type: message.type?.rawValue ?? 0, created_at: message.createdAt, updated_at: message.updatedAt, sent_at: message.sentAt, custom_data: message.customData, isSystemMessage: message.isSystemMessage) { (message, error) in
                 }
             }
         } catch {
@@ -211,18 +234,6 @@ class MessagesLocal: NSObject {
             try DbConnection.shareInstance.connection?.run(filter)
         } catch {
             print("remove message error")
-        }
-    }
-    
-    func countMessageNotSeen(channelId: String, lastSeen: Double, completion: @escaping (Int?, Error?) -> Void) {
-        do {
-//            let filter = tblMessage.filter(self.channel_id == channelId && self.sent_at > lastSeen).count
-//            let result = try DbConnection.shareInstance.connection?.run(filter)
-            let filter = tblMessage.filter(self.channel_id == channelId && self.sent_at > lastSeen).count
-            print("result count message " , filter)
-            completion(0, nil)
-        } catch {
-            print("error count meesage")
         }
     }
 }

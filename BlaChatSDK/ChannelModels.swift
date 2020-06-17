@@ -22,7 +22,7 @@ class ChannelModels: NSObject {
             }
             let dao = BlaChannelDAO(json: json["data"])
             let channel = BlaChannel(dao: dao)
-            self.channelLocal.insertChannel(id: channel.id!, name: channel.name ?? "", avatar: channel.avatar ?? "", created_at: channel.createdAt, updated_at: channel.updatedAt, type: channel.type!, last_message_id: channel.lastMessageId, customData: channel.customData) { (channel, error) in
+            self.channelLocal.insertChannel(id: channel.id!, name: channel.name ?? "", avatar: channel.avatar ?? "", created_at: channel.createdAt, updated_at: channel.updatedAt, type: channel.type?.rawValue ?? 0, last_message_id: channel.lastMessageId, customData: channel.customData, numberMessageUnread: 0) { (channel, error) in
             }
             completion(channel, nil)
         }
@@ -35,7 +35,6 @@ class ChannelModels: NSObject {
                 listChannelResult = channels
                 var channelIds = [String]()
                 for item in channels {
-                    CacheRepository.shareInstance.vallidChannels.append(item)
                     channelIds.append(item.id!)
                 }
                 self.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
@@ -60,16 +59,11 @@ class ChannelModels: NSObject {
                         let channel = BlaChannel(dao: dao)
                         channels.append(channel)
                         channelIds.append(channel.id!)
-                        if let index = CacheRepository.shareInstance.vallidChannels.firstIndex(where: {$0.id == channel.id}) {
-                            CacheRepository.shareInstance.vallidChannels[index] = channel
-                        } else {
-                            CacheRepository.shareInstance.vallidChannels.append(channel)
-                        }
                         self.saveChannel(channel: channel)
                     }
+                    completion(channels, error)
                     self.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
                     }
-                    completion(channels, error)
                 }
             }
         }
@@ -156,24 +150,20 @@ class ChannelModels: NSObject {
     }
     
     func getChannelById(channelId: String, completion: @escaping(BlaChannel?, Error?) -> Void) {
-        if let channel = CacheRepository.shareInstance.vallidChannels.first(where: {$0.id == channelId}) {
-            completion(channel, nil)
-        } else {
-            self.channelLocal.getChannelById(channelId: channelId) { (channel, error) in
-                if let channel = channel {
-                    completion(channel, nil)
-                } else {
-                    self.channelRemote.getChannelsByIds(channelIds: [channelId]) { (json, error) in
-                        if let json = json {
-                            if (json["data"].arrayValue.count > 0) {
-                                let channel = BlaChannel(dao: BlaChannelDAO(json: json["data"].arrayValue[0]))
-                                completion(channel, nil)
-                            } else {
-                                completion(nil, nil)
-                            }
+        self.channelLocal.getChannelById(channelId: channelId) { (channel, error) in
+            if let channel = channel {
+                completion(channel, nil)
+            } else {
+                self.channelRemote.getChannelsByIds(channelIds: [channelId]) { (json, error) in
+                    if let json = json {
+                        if (json["data"].arrayValue.count > 0) {
+                            let channel = BlaChannel(dao: BlaChannelDAO(json: json["data"].arrayValue[0]))
+                            completion(channel, nil)
                         } else {
-                            completion(nil, error)
+                            completion(nil, nil)
                         }
+                    } else {
+                        completion(nil, error)
                     }
                 }
             }
@@ -237,5 +227,13 @@ class ChannelModels: NSObject {
     
     func removeUserInChannelLocal(channelId: String, userId: String) {
         self.userInChannelLocal.removeUserInChannel(channelId: channelId, userId: userId)
+    }
+    
+    func updateNumberMessageUnread(channelId: String, isResetCount: Bool, completion: @escaping(BlaChannel?, Error?) -> Void) {
+        self.channelLocal.updateNumberMessageUnread(channelId: channelId, isResetCount: isResetCount) {(result) in
+            self.getChannelById(channelId: channelId) { (channel, error) in
+                completion(channel, error)
+            }
+        }
     }
 }

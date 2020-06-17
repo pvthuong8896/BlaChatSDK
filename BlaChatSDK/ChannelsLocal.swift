@@ -25,6 +25,7 @@ class ChannelsLocal: NSObject {
     private let type = Expression<Int?>("type")
     private let last_message_id = Expression<String?>("last_message_id")
     private let custom_data = Expression<String?>("custom_data")
+    private let number_message_unread = Expression<Int?>("number_message_unread")
     
     //Message
     let tblMessage = Table("tblMessage")
@@ -52,6 +53,7 @@ class ChannelsLocal: NSObject {
                     table.column(self.type)
                     table.column(self.last_message_id)
                     table.column(self.custom_data)
+                    table.column(self.number_message_unread)
                 }))
                 try connection.run(self.tblChannel.createIndex(self.updated_at))
                 print("Create table tblChannel success")
@@ -61,8 +63,17 @@ class ChannelsLocal: NSObject {
         }
     }
 
-    func insertChannel(id: String?, name: String?, avatar: String?, created_at: Date?, updated_at: Date?, type: Int?, last_message_id: String?, customData: String?, completion: @escaping(BlaChannel?, Error?) -> Void) {
+    func insertChannel(id: String?, name: String?, avatar: String?, created_at: Date?, updated_at: Date?, type: Int?, last_message_id: String?, customData: [String:Any]?, numberMessageUnread: Int?, completion: @escaping(BlaChannel?, Error?) -> Void) {
         do {
+            var customDataString = ""
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: customData,
+              options: .prettyPrinted
+              ),
+              let theJSONText = String(data: theJSONData,
+                                       encoding: String.Encoding.utf8) {
+                customDataString = theJSONText
+            }
             let insert = tblChannel.insert(
                 self.id <- id,
                 self.name <- name,
@@ -71,9 +82,10 @@ class ChannelsLocal: NSObject {
                 self.updated_at <- updated_at?.timeIntervalSince1970,
                 self.type <- type,
                 self.last_message_id <- last_message_id,
-                self.custom_data <- customData
+                self.custom_data <- customDataString,
+                self.number_message_unread <- numberMessageUnread
             )
-            let channel = try DbConnection.shareInstance.connection?.run(insert)
+            try DbConnection.shareInstance.connection?.run(insert)
         } catch {
             print("insert channel error ", error)
         }
@@ -104,10 +116,11 @@ class ChannelsLocal: NSObject {
                     let channelType = try row.get(tblChannel[type])
                     let channelLastMessageId = try row.get(tblChannel[last_message_id])
                     let channelCustomData = try row.get(tblChannel[custom_data])
-                    
+                    let channelNumberMessageUnread = try row.get(tblChannel[number_message_unread])
                     let messageId = try row.get(tblMessage[id])
                     
-                    let channel = BlaChannel(id: channelId, name: channelName, avatar: channelAvatar, createdAt: channelCreatedAt, updatedAt: channelUpdatedAt, type: channelType, lastMessageId: channelLastMessageId, customData: channelCustomData)
+                    
+                    let channel = BlaChannel(id: channelId, name: channelName, avatar: channelAvatar, createdAt: channelCreatedAt, updatedAt: channelUpdatedAt, type: channelType, lastMessageId: channelLastMessageId, customData: channelCustomData, number_message_unread: channelNumberMessageUnread)
                     if messageId != nil {
                         // Row for lastMessage
                         let messageId = try row.get(tblMessage[id])
@@ -152,10 +165,11 @@ class ChannelsLocal: NSObject {
                 let channelType = try row.get(tblChannel[type])
                 let channelLastMessageId = try row.get(tblChannel[last_message_id])
                 let channelCustomData = try row.get(tblChannel[custom_data])
+                let channelNumberMessageUnread = try row.get(tblChannel[number_message_unread])
 
                 let messageId = try row.get(tblMessage[id])
 
-                let channel = BlaChannel(id: channelId, name: channelName, avatar: channelAvatar, createdAt: channelCreatedAt, updatedAt: channelUpdatedAt, type: channelType, lastMessageId: channelLastMessageId, customData: channelCustomData)
+                let channel = BlaChannel(id: channelId, name: channelName, avatar: channelAvatar, createdAt: channelCreatedAt, updatedAt: channelUpdatedAt, type: channelType, lastMessageId: channelLastMessageId, customData: channelCustomData, number_message_unread: channelNumberMessageUnread)
                 if messageId != nil {
                     // Row for lastMessage
                     let messageId = try row.get(tblMessage[id])
@@ -191,19 +205,25 @@ class ChannelsLocal: NSObject {
             if let avatar = channel.avatar {
                 setter.append(self.avatar <- avatar)
             }
-            setter.append(self.updated_at <- Date().timeIntervalSince1970)
-            if let type = channel.type {
+            if let type = channel.type?.rawValue {
                 setter.append(self.type <- type)
             }
             if let last_message_id = channel.lastMessageId {
                 setter.append(self.last_message_id <- last_message_id)
             }
-            if let custom_data = channel.customData {
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: channel.customData,
+              options: .prettyPrinted
+              ),
+              let theJSONText = String(data: theJSONData,
+                                       encoding: String.Encoding.utf8) {
                 setter.append(self.custom_data <- custom_data)
+                print("JSON string = \n\(theJSONText)")
             }
+            setter.append(self.updated_at <- Date().timeIntervalSince1970)
             let update = channelFilter.update(setter)
             
-            let result = try DbConnection.shareInstance.connection?.run(update)
+            try DbConnection.shareInstance.connection?.run(update)
         } catch {
             print("Update channel error ", error)
         }
@@ -229,6 +249,34 @@ class ChannelsLocal: NSObject {
         }
     }
     
+    func updateNumberMessageUnread(channelId: String, isResetCount: Bool, completion: @escaping(Bool) -> Void) {
+        do {
+            let rowChannel = try DbConnection.shareInstance.connection?.pluck(tblChannel.filter(self.id == channelId))
+            if let rowChannel = rowChannel {
+                var numberUpdate = 0
+                if isResetCount {
+                    numberUpdate = 0
+                } else {
+                    if let numberMessage = rowChannel[self.number_message_unread] {
+                        numberUpdate = numberMessage + 1
+                    } else {
+                        numberUpdate = 1
+                    }
+                }
+                var setter:[SQLite.Setter] = [SQLite.Setter]()
+                setter.append(self.number_message_unread <- numberUpdate)
+                let update = tblChannel.filter(self.id == channelId).update(setter)
+                
+                try DbConnection.shareInstance.connection?.run(update)
+                completion(true)
+            } else {
+                completion(false)
+            }
+        } catch {
+            completion(false)
+        }
+    }
+    
     func saveChannel(channel: BlaChannel) {
         do {
             try DbConnection.shareInstance.connection?.transaction {
@@ -238,8 +286,13 @@ class ChannelsLocal: NSObject {
                     print("run update channel ", channel)
                     self.updateChannel(channel: channel)
                 } else {
-                    print("run insert channel ")
-                    self.insertChannel(id: channel.id, name: channel.name, avatar: channel.avatar, created_at: channel.createdAt, updated_at: channel.updatedAt, type: channel.type, last_message_id: channel.lastMessageId, customData: channel.customData) { (channel, error) in
+                    var numberMessage = 0
+                    if let number = Int(channel.numberMessageUnread) {
+                        numberMessage = number
+                    } else {
+                        numberMessage = 20
+                    }
+                    self.insertChannel(id: channel.id, name: channel.name, avatar: channel.avatar, created_at: channel.createdAt, updated_at: channel.updatedAt, type: channel.type?.rawValue, last_message_id: channel.lastMessageId, customData: channel.customData, numberMessageUnread: numberMessage) { (channel, error) in
                     }
                 }
             }

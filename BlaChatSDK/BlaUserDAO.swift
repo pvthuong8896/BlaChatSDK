@@ -13,13 +13,16 @@ public class BlaUserDAO: NSObject {
     public var id: String?
     public var name: String?
     public var avatar: String?
-    public var updateAt: Date?
-    public var createAt: Date?
+    public var updatedAt: Date?
+    public var createdAt: Date?
     public var customData: String?
     
     public init(json: JSON) {
-        id = json[""].stringValue
-        name = json[""].stringValue
-        avatar = json[""].stringValue
+        id = json["id"].stringValue
+        name = json["name"].stringValue
+        avatar = json["avatar"].stringValue
+        createdAt = Date.init(timeIntervalSince1970: json["created_at"].doubleValue)
+        updatedAt = Date.init(timeIntervalSince1970: json["updated_at"].doubleValue)
+        customData = json["custom_data"].stringValue
     }
 }
