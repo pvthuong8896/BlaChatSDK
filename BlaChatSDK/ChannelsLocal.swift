@@ -67,7 +67,7 @@ class ChannelsLocal: NSObject {
         do {
             var customDataString = ""
             if let theJSONData = try?  JSONSerialization.data(
-                withJSONObject: customData,
+                withJSONObject: customData ?? [String: Any](),
               options: .prettyPrinted
               ),
               let theJSONText = String(data: theJSONData,
@@ -212,7 +212,7 @@ class ChannelsLocal: NSObject {
                 setter.append(self.last_message_id <- last_message_id)
             }
             if let theJSONData = try?  JSONSerialization.data(
-                withJSONObject: channel.customData,
+                withJSONObject: channel.customData ?? [String: Any](),
               options: .prettyPrinted
               ),
               let theJSONText = String(data: theJSONData,

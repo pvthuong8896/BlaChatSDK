@@ -12,11 +12,21 @@ import Alamofire
 
 class MessagesRemote: BaseRepositoryRemote {
     
-    func sendMessage(channelId: String, message: String, sentAt: Double, completion: @escaping(JSON?, Error?) -> Void) {
+    func sendMessage(channelId: String, message: String, sentAt: Double, customData: [String: Any]?, completion: @escaping(JSON?, Error?) -> Void) {
         var param = [String: Any]()
         param["channel_id"] = channelId
         param["message"] = message
         param["sent_at"] = Int(sentAt)
+        if let customData = customData {
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: customData ?? [String: Any](),
+              options: .prettyPrinted
+              ),
+              let jsonString = String(data: theJSONData,
+                                       encoding: String.Encoding.utf8) {
+                 param["custom_data"] = jsonString
+            }
+        }
         
         let request = alamoFireManager.request(
             Constants.domain + "/v1/messages/create",

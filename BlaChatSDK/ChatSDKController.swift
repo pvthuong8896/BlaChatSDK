@@ -259,7 +259,7 @@ public class ChatSDK: NSObject {
     }
     
     public func createMessage(content: String, channelId: String, type: BlaMessageType, customData: [String : Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
-        messageModels.sendMessage(channelId: channelId, type: type.rawValue, message: content) { (message, error) in
+        messageModels.sendMessage(channelId: channelId, type: type.rawValue, message: content, customData: customData) { (message, error) in
             self.userModels.getUserById(user_id: self.userId!) { (user) in
                 message?.author = user
                 completion(message, error)

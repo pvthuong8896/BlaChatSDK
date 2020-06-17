@@ -78,11 +78,11 @@ class MessagesLocal: NSObject {
         do {
             var customDataString = ""
             if let theJSONData = try?  JSONSerialization.data(
-                withJSONObject: custom_data,
-              options: .prettyPrinted
-              ),
-              let jsonString = String(data: theJSONData,
-                                       encoding: String.Encoding.utf8) {
+                withJSONObject: custom_data ?? [String: Any](),
+                options: []
+                ),
+                let jsonString = String(data: theJSONData,
+                                        encoding: String.Encoding.utf8) {
                 customDataString = jsonString
             }
             let insert = tblMessage.insert(
@@ -113,11 +113,11 @@ class MessagesLocal: NSObject {
                     let messageFilter = tblMessage.filter(self.id == idLocal)
                     var customData = ""
                     if let theJSONData = try?  JSONSerialization.data(
-                        withJSONObject: message.customData,
-                      options: .prettyPrinted
-                      ),
-                      let theJSONText = String(data: theJSONData,
-                                               encoding: String.Encoding.utf8) {
+                        withJSONObject: message.customData ?? [String: Any](),
+                        options: .prettyPrinted
+                        ),
+                        let theJSONText = String(data: theJSONData,
+                                                 encoding: String.Encoding.utf8) {
                         customData = theJSONText
                     }
                     let update = messageFilter.update(
@@ -198,11 +198,11 @@ class MessagesLocal: NSObject {
                 setter.append(self.sent_at <- sent_at.timeIntervalSince1970)
             }
             if let theJSONData = try?  JSONSerialization.data(
-                withJSONObject: message.customData,
-              options: .prettyPrinted
-              ),
-              let customData = String(data: theJSONData,
-                                       encoding: String.Encoding.utf8) {
+                withJSONObject: message.customData ?? [String: Any](),
+                options: .prettyPrinted
+                ),
+                let customData = String(data: theJSONData,
+                                        encoding: String.Encoding.utf8) {
                 setter.append(self.custom_data <- customData)
             }
             let update = mesageFilter.update(setter)

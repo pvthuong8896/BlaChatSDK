@@ -30,7 +30,7 @@ class ChannelsRemote: BaseRepositoryRemote {
         param["userIds"] = userIds
         param["type"] = type
         if let theJSONData = try?  JSONSerialization.data(
-            withJSONObject: customData,
+            withJSONObject: customData ?? [String: Any](),
           options: .prettyPrinted
           ),
           let jsonString = String(data: theJSONData,

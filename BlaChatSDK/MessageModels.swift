@@ -14,10 +14,10 @@ class MessageModels: NSObject {
     var channelLocal = ChannelsLocal()
     var userInChannelLocal = UserInChannelLocal()
     
-    func sendMessage(channelId: String, type: Int, message: String, completion: @escaping(BlaMessage?, Error?) -> Void) {
+    func sendMessage(channelId: String, type: Int, message: String, customData: [String: Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
         let userId = UserDefaults.standard.string(forKey: "userId")
         let tmpId = UUID().uuidString
-        messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: nil, isSystemMessage: false) { (messLocal, error) in
+        messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: customData, isSystemMessage: false) { (messLocal, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -26,7 +26,7 @@ class MessageModels: NSObject {
                 }
                 self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
                     , lastSeen: timeNow, lastReceive: timeNow))
-                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow) { (json, error) in
+                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow, customData: customData) { (json, error) in
                     if let err = error {
                         completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
                     }
@@ -45,7 +45,7 @@ class MessageModels: NSObject {
     }
     
     func syncMessage(message: BlaMessage, completion: @escaping(BlaMessage?, Error?) -> Void) {
-        self.messageRemote.sendMessage(channelId: message.channelId!, message: message.content!, sentAt: message.createdAt?.timeIntervalSince1970 ?? Date().timeIntervalSince1970) { (json, error) in
+        self.messageRemote.sendMessage(channelId: message.channelId!, message: message.content!, sentAt: message.createdAt?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, customData: message.customData) { (json, error) in
             if let err = error {
                 completion(nil, err)
             }
