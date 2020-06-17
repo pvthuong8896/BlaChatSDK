@@ -14,4 +14,5 @@ struct Constants {
     static var domainPresence = "http://159.65.2.104:18000/presence/"
     static var intervalSetOnlineTime: Double = 15
     static var intervalGetPresenceTime: Double = 30
+    static var numberEventResetDatabase: Int = 1500
 }

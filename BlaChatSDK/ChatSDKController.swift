@@ -63,8 +63,24 @@ public class ChatSDK: NSObject {
         self.token = token
         self.getAllUser()
         CentrifugoController.shareInstance.delegate = self
-        self.getAllUser()
         self.syncMessage()
+        self.getMissingEvent()
+    }
+    
+    private func getMissingEvent() {
+        if let lastEventId = UserDefaults.standard.string(forKey: "lastEventId") {
+            self.channelModels.getMissingEvent(lastEventId: lastEventId) { (json, error) in
+                if let json = json {
+                    if json["data"].arrayValue.count > 0 {
+                        for item in json["data"].arrayValue {
+                            UserDefaults.standard.setValue(json["id"].stringValue, forKey: "lastEventId")
+                            let event = JSON.init(parseJSON: item["payload"].stringValue)
+                            self.handleEvent(event: event)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private func intervalSetOnline() {
@@ -189,8 +205,8 @@ public class ChatSDK: NSObject {
         }
     }
     
-    public func createChannel(name: String, userIds: [String], type: BlaChannelType, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels.createChannel(name: name, userIds: userIds, type: type.rawValue) { (channel, error) in
+    public func createChannel(name: String, userIds: [String], type: BlaChannelType, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelModels.createChannel(name: name, userIds: userIds, type: type.rawValue, customData: customData) { (channel, error) in
             completion(channel, error)
         }
     }
@@ -421,13 +437,10 @@ public class ChatSDK: NSObject {
             completion(messages)
         }
     }
-}
-
-extension ChatSDK: CentrifugoControllerDelegate {
-    func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
-        let data = String(data: e.data, encoding: .utf8) ?? ""
-        let event = JSON.init(parseJSON: data)
-        print("new event SDK ", event)
+    
+    func handleEvent(event: JSON) {
+        print("lastId ", event["event_id"])
+        UserDefaults.standard.setValue(event["event_id"].stringValue, forKey: "lastEventId")
         switch (event["type"]) {
         case "new_message":
             let dao = BlaMessageDAO(json: event["payload"])
@@ -587,5 +600,14 @@ extension ChatSDK: CentrifugoControllerDelegate {
         default:
             break
         }
+    }
+}
+
+extension ChatSDK: CentrifugoControllerDelegate {
+    func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
+        let data = String(data: e.data, encoding: .utf8) ?? ""
+        let event = JSON.init(parseJSON: data)
+        print("new event SDK ", event)
+        self.handleEvent(event: event)
     }
 }

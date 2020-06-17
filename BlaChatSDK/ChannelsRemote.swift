@@ -12,11 +12,31 @@ import Alamofire
 
 class ChannelsRemote: BaseRepositoryRemote {
     
-    func createChannel(name: String, userIds: [String], type: Int, completion: @escaping (JSON?, Error?) -> Void) {
+    func getMissingEvent(lastEventId: String, completion: @escaping(JSON?, Error?) -> Void) {
+        let request = alamoFireManager.request(
+            Constants.domain + "/v1/events/gets?eventId=\(lastEventId)",
+            method: .get,
+            encoding: JSONEncoding.default,
+            headers: self.headers
+        )
+        self.requestManager.startRequest(request) { (json, error) in
+            completion(json, error)
+        }
+    }
+    
+    func createChannel(name: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (JSON?, Error?) -> Void) {
         var param = [String: Any]()
         param["name"] = name
         param["userIds"] = userIds
         param["type"] = type
+        if let theJSONData = try?  JSONSerialization.data(
+            withJSONObject: customData,
+          options: .prettyPrinted
+          ),
+          let jsonString = String(data: theJSONData,
+                                   encoding: String.Encoding.utf8) {
+            param["custom_data"] = jsonString
+        }
         
         let request = alamoFireManager.request(
             Constants.domain + "/v1/user/channels/create",

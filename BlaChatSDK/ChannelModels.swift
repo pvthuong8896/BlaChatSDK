@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class ChannelModels: NSObject {
     let messageLocal = MessagesLocal()
@@ -14,8 +15,14 @@ class ChannelModels: NSObject {
     let channelRemote = ChannelsRemote()
     let userInChannelLocal = UserInChannelLocal()
     
-    func createChannel(name: String, userIds: [String], type: Int, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelRemote.createChannel(name: name, userIds: userIds, type: type) { (json, error) in
+    func getMissingEvent(lastEventId: String, completion: @escaping(JSON?, Error?) -> Void) {
+        self.channelRemote.getMissingEvent(lastEventId: lastEventId) { (json, error) in
+            completion(json, error)
+        }
+    }
+    
+    func createChannel(name: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelRemote.createChannel(name: name, userIds: userIds, type: type, customData: customData) { (json, error) in
             guard let json = json else {
                 completion(nil , error)
                 return
