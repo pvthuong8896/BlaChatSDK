@@ -61,8 +61,8 @@ public class ChatSDK: NSObject {
         UserDefaults.standard.setValue(token, forKey: "token")
         self.userId = userId
         self.token = token
-        self.getAllUser()
         CentrifugoController.shareInstance.delegate = self
+        self.getAllUser()
         self.syncMessage()
         self.getMissingEvent()
     }
@@ -439,7 +439,6 @@ public class ChatSDK: NSObject {
     }
     
     func handleEvent(event: JSON) {
-        print("lastId ", event["event_id"])
         UserDefaults.standard.setValue(event["event_id"].stringValue, forKey: "lastEventId")
         switch (event["type"]) {
         case "new_message":
