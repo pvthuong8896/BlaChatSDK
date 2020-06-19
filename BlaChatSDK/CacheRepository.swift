@@ -10,6 +10,8 @@ import UIKit
 
 class CacheRepository: NSObject {
 
+    var token: String = ""
+    var userId: String = ""
     var validUsers = [BlaUser]()
     
     static var shareInstance: CacheRepository = {

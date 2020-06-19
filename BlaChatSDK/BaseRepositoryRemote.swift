@@ -16,9 +16,9 @@ class BaseRepositoryRemote: NSObject {
     var alamoFireManager = Alamofire.SessionManager()
     var headers: HTTPHeaders {
         get {
-            let accessToken = UserDefaults.standard.string(forKey: "token")
+            let accessToken = CacheRepository.shareInstance.token
             let headers: HTTPHeaders = [
-                "Authorization": "Bearer \(accessToken!)",
+                "Authorization": "Bearer \(accessToken)",
                 "Content-Type": "application/json"
             ]
             return headers
@@ -27,9 +27,9 @@ class BaseRepositoryRemote: NSObject {
     
     var headersWithoutJson: HTTPHeaders {
         get {
-            let accessToken = UserDefaults.standard.string(forKey: "token")
+            let accessToken = CacheRepository.shareInstance.token
             let headers: HTTPHeaders = [
-                "Authorization": "Bearer \(accessToken!)",
+                "Authorization": "Bearer \(accessToken)",
             ]
             return headers
         }

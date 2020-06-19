@@ -15,7 +15,7 @@ class MessageModels: NSObject {
     var userInChannelLocal = UserInChannelLocal()
     
     func sendMessage(channelId: String, type: Int, message: String, customData: [String: Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
-        let userId = UserDefaults.standard.string(forKey: "userId")
+        let userId = CacheRepository.shareInstance.userId
         let tmpId = UUID().uuidString
         messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: customData, isSystemMessage: false) { (messLocal, error) in
             if let err = error {
@@ -106,7 +106,7 @@ class MessageModels: NSObject {
     }
     
     func markReceiveMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        let userId = UserDefaults.standard.string(forKey: "userId")
+        let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
         self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: nil, lastReceive: timeNow))
         messageRemote.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in
@@ -119,7 +119,7 @@ class MessageModels: NSObject {
     }
     
     func markSeenMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        let userId = UserDefaults.standard.string(forKey: "userId")
+        let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
         self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: timeNow, lastReceive: timeNow))
         messageRemote.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in

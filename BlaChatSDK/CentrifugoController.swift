@@ -19,8 +19,6 @@ class CentrifugoController: NSObject {
     private var sub: CentrifugeSubscription?
     private var isConnected: Bool = false
     private var subscriptionCreated: Bool = false
-    var userId: String?
-    var token: String?
     weak var delegate: CentrifugoControllerDelegate?
     
     static var shareInstance: CentrifugoController = {
@@ -30,8 +28,6 @@ class CentrifugoController: NSObject {
     
     override init() {
         super.init()
-        self.userId = UserDefaults.standard.string(forKey: "userId")
-        self.token = UserDefaults.standard.string(forKey: "token")
         connectSocket()
     }
     
@@ -39,10 +35,10 @@ class CentrifugoController: NSObject {
         let config = CentrifugeClientConfig()
         let url = "ws://\(Constants.IP):8001/connection/websocket?format=protobuf"
         self.client = CentrifugeClient(url: url, config: config, delegate: self)
-        self.client?.setToken(self.token!)
+        self.client?.setToken(CacheRepository.shareInstance.token)
         self.client?.connect()
         do {
-            sub = try self.client?.newSubscription(channel: "chat#\(self.userId!)", delegate: self)
+            sub = try self.client?.newSubscription(channel: "chat#\(CacheRepository.shareInstance.userId)", delegate: self)
         } catch {
             print("Can not create subscription: \(error)")
             return

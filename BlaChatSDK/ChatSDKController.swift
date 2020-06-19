@@ -32,12 +32,9 @@ public protocol BlaPresenceListener: NSObjectProtocol {
 }
 
 public class ChatSDK: NSObject {
-    
-    private var userId: String?
-    private var token: String?
-    private var channelModels = ChannelModels()
-    private var messageModels = MessageModels()
-    private var userModels = UserModels()
+    private var channelModels: ChannelModels?
+    private var messageModels: MessageModels?
+    private var userModels: UserModels?
     private var client: CentrifugeClient?
     private var sub: CentrifugeSubscription?
     private var isConnected: Bool = false
@@ -57,10 +54,11 @@ public class ChatSDK: NSObject {
     }()
     
     public func initBlaChatSDK(userId: String, token: String, completion: @escaping (Bool?, Error?) -> Void) {
-        UserDefaults.standard.setValue(userId, forKey: "userId")
-        UserDefaults.standard.setValue(token, forKey: "token")
-        self.userId = userId
-        self.token = token
+        CacheRepository.shareInstance.userId = userId
+        CacheRepository.shareInstance.token = token
+        channelModels = ChannelModels()
+        messageModels = MessageModels()
+        userModels = UserModels()
         CentrifugoController.shareInstance.delegate = self
         self.getAllUser()
         self.syncMessage()
@@ -69,7 +67,7 @@ public class ChatSDK: NSObject {
     
     private func getMissingEvent() {
         if let lastEventId = UserDefaults.standard.string(forKey: "lastEventId") {
-            self.channelModels.getMissingEvent(lastEventId: lastEventId) { (json, error) in
+            self.channelModels!.getMissingEvent(lastEventId: lastEventId) { (json, error) in
                 if let json = json {
                     if json["data"].arrayValue.count > 0 {
                         for item in json["data"].arrayValue {
@@ -85,7 +83,7 @@ public class ChatSDK: NSObject {
     
     private func intervalSetOnline() {
         let timer = Timer.scheduledTimer(withTimeInterval: Constants.intervalSetOnlineTime, repeats: true) { (timer) in
-            self.userModels.setUserStatus(userId: self.userId!)
+            self.userModels!.setUserStatus(userId: CacheRepository.shareInstance.userId)
         }
         timer.fire()
         let timer2 = Timer.scheduledTimer(withTimeInterval: Constants.intervalGetPresenceTime, repeats: true) { (timer) in
@@ -99,7 +97,7 @@ public class ChatSDK: NSObject {
         for item in CacheRepository.shareInstance.validUsers {
             userIds.append(item.id!)
         }
-        self.userModels.getStatusUserByIds(userIds: userIds) { (result, error) in
+        self.userModels!.getStatusUserByIds(userIds: userIds) { (result, error) in
             if let result = result {
                 var userPresences = [BlaUser]()
                 for (index,user) in CacheRepository.shareInstance.validUsers.enumerated() {
@@ -108,7 +106,7 @@ public class ChatSDK: NSObject {
                         CacheRepository.shareInstance.validUsers[index].online = result[indexStatus].isOnline
                         CacheRepository.shareInstance.validUsers[index].lastActiveAt = Date()
                         userPresences.append(userx)
-                        self.userModels.saveUser(user: CacheRepository.shareInstance.validUsers[index])
+                        self.userModels!.saveUser(user: CacheRepository.shareInstance.validUsers[index])
                     }
                 }
                 for delegate in self.presenceDelegates {
@@ -158,7 +156,7 @@ public class ChatSDK: NSObject {
     }
     
     public func getChannels(lastId: String?, limit: Int, completion: @escaping ([BlaChannel]?, Error?) -> Void) {
-        channelModels.getChannel(lastId: lastId, limit: limit) { (channels, error) in
+        channelModels!.getChannel(lastId: lastId, limit: limit) { (channels, error) in
             if let channels = channels {
                 self.handleChannel(channels: channels) { (result) in
                     completion(result, nil)
@@ -170,7 +168,7 @@ public class ChatSDK: NSObject {
     }
     
     public func getUserInChannel(channelId: String, completion: @escaping ([BlaUser]?, Error?) -> Void) {
-        self.channelModels.getUserInChannel(channelId: channelId) { (users, error) in
+        self.channelModels!.getUserInChannel(channelId: channelId) { (users, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -180,7 +178,7 @@ public class ChatSDK: NSObject {
                         listUserId.append(user.userId!)
                     }
                 }
-                self.userModels.getUserByIds(ids: listUserId) { (users, error) in
+                self.userModels!.getUserByIds(ids: listUserId) { (users, error) in
                     completion(users, error)
                 }
             }
@@ -188,13 +186,13 @@ public class ChatSDK: NSObject {
     }
     
     public func getUsers(userIds: [String], completion: @escaping ([BlaUser]?, Error?) -> Void) {
-        self.userModels.getUserByIds(ids: userIds) { (users, error) in
+        self.userModels!.getUserByIds(ids: userIds) { (users, error) in
             completion(users, error)
         }
     }
     
     public func getMessages(channelId: String, lastId: String, limit: Int, completion: @escaping([BlaMessage]?, Error?) -> Void) {
-        messageModels.getMessage(channelId: channelId, lastId: lastId, limit: limit) { (messages, error) in
+        messageModels!.getMessage(channelId: channelId, lastId: lastId, limit: limit) { (messages, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -206,19 +204,19 @@ public class ChatSDK: NSObject {
     }
     
     public func createChannel(name: String, userIds: [String], type: BlaChannelType, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels.createChannel(name: name, userIds: userIds, type: type.rawValue, customData: customData) { (channel, error) in
+        channelModels!.createChannel(name: name, userIds: userIds, type: type.rawValue, customData: customData) { (channel, error) in
             completion(channel, error)
         }
     }
     
     public func updateChannel(channel: BlaChannel, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels.updateChannel(channelId: channel.id!, name: channel.name ?? "", avatar: channel.avatar ?? "") { (channel, error) in
+        channelModels!.updateChannel(channelId: channel.id!, name: channel.name ?? "", avatar: channel.avatar ?? "") { (channel, error) in
             completion(channel, error)
         }
     }
     
     public func deleteChannel(channel: BlaChannel, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels.deleteChannel(channelId: channel.id!) { (result, error) in
+        channelModels!.deleteChannel(channelId: channel.id!) { (result, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -228,39 +226,39 @@ public class ChatSDK: NSObject {
     }
     
     public func sendStartTyping(channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        channelModels.sendTypingEvent(channelId: channelId) { (result, error) in
+        channelModels!.sendTypingEvent(channelId: channelId) { (result, error) in
             completion(result, error)
         }
     }
     
     public func sendStopTyping(channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        channelModels.sendStopTypingEvent(channelId: channelId) { (result, error) in
+        channelModels!.sendStopTypingEvent(channelId: channelId) { (result, error) in
             completion(result, error)
         }
     }
     
     public func markReceiveMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        messageModels.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
+        messageModels!.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
             completion(result, error)
         }
     }
     
     public func markSeenMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        self.channelModels.updateNumberMessageUnread(channelId: channelId, isResetCount: true) {(channel, error) in
+        self.channelModels!.updateNumberMessageUnread(channelId: channelId, isResetCount: true) {(channel, error) in
             if let channel = channel {
                 for delegate in self.channelDelegates {
                     delegate.onUpdateChannel(channel: channel)
                 }
             }
         }
-        messageModels.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
+        messageModels!.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
             completion(result, error)
         }
     }
     
     public func createMessage(content: String, channelId: String, type: BlaMessageType, customData: [String : Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
-        messageModels.sendMessage(channelId: channelId, type: type.rawValue, message: content, customData: customData) { (message, error) in
-            self.userModels.getUserById(user_id: self.userId!) { (user) in
+        messageModels!.sendMessage(channelId: channelId, type: type.rawValue, message: content, customData: customData) { (message, error) in
+            self.userModels!.getUserById(user_id: CacheRepository.shareInstance.userId) { (user) in
                 message?.author = user
                 completion(message, error)
             }
@@ -268,7 +266,7 @@ public class ChatSDK: NSObject {
     }
     
     public func updateMessage(message: BlaMessage, completion: @escaping (BlaMessage?, Error?) -> Void) {
-        self.messageModels.updateMessage(channelId: message.channelId!, messageId: message.id!, content: message.content!) { (result, error) in
+        self.messageModels!.updateMessage(channelId: message.channelId!, messageId: message.id!, content: message.content!) { (result, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -278,7 +276,7 @@ public class ChatSDK: NSObject {
     }
     
     public func deleteMessage(message: BlaMessage, completion: @escaping (BlaMessage?, Error?) -> Void) {
-        self.messageModels.deleteMessage(channelId: message.channelId!, messageId: message.id!) { (result, error) in
+        self.messageModels!.deleteMessage(channelId: message.channelId!, messageId: message.id!) { (result, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -288,13 +286,13 @@ public class ChatSDK: NSObject {
     }
     
     public func inviteUserToChannel(userIds: [String], channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        self.channelModels.inviteUserToChannel(channelId: channelId, userIds: userIds) { (result, error) in
+        self.channelModels!.inviteUserToChannel(channelId: channelId, userIds: userIds) { (result, error) in
             completion(result, error)
         }
     }
     
     public func removeUserFromChannel(userId: String, channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        self.channelModels.removeUserFromChannel(channelId: channelId, userId: userId) { (result, error) in
+        self.channelModels!.removeUserFromChannel(channelId: channelId, userId: userId) { (result, error) in
             completion(result, error)
         }
     }
@@ -304,7 +302,7 @@ public class ChatSDK: NSObject {
         for item in CacheRepository.shareInstance.validUsers {
             userIds.append(item.id!)
         }
-        self.userModels.getStatusUserByIds(userIds: userIds) { (result, error) in
+        self.userModels!.getStatusUserByIds(userIds: userIds) { (result, error) in
             var userPresences = [BlaUser]()
             if let result = result {
                 for (index,user) in CacheRepository.shareInstance.validUsers.enumerated() {
@@ -327,17 +325,17 @@ public class ChatSDK: NSObject {
     }
     
     private func getAllUser() {
-        userModels.getAllUser { (users, error) in
+        userModels!.getAllUser { (users, error) in
             self.intervalSetOnline()
             self.intervalGetStatusUser()
         }
     }
     
     private func syncMessage() {
-        self.messageModels.getMessageNotSent { (messages, error) in
+        self.messageModels!.getMessageNotSent { (messages, error) in
             if let messages = messages {
                 for message in messages {
-                    self.messageModels.syncMessage(message: message) { (message, error) in
+                    self.messageModels!.syncMessage(message: message) { (message, error) in
                     }
                 }
             }
@@ -349,7 +347,7 @@ public class ChatSDK: NSObject {
         for item in channels {
             channelIds.append(item.id!)
         }
-        self.channelModels.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
+        self.channelModels!.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
             if let userInChannels = result {
                 var userIds = [String]()
                 for item in channels {
@@ -359,10 +357,10 @@ public class ChatSDK: NSObject {
                         }
                     }
                 }
-                self.userModels.getUserByIds(ids: userIds) { (users, error) in
+                self.userModels!.getUserByIds(ids: userIds) { (users, error) in
                     for item in channels {
                         if item.type == BlaChannelType.DIRECT {
-                            let partnerId = userInChannels.first(where: {($0.channelId == item.id) && ($0.userId != self.userId)})?.userId
+                            let partnerId = userInChannels.first(where: {($0.channelId == item.id) && ($0.userId != CacheRepository.shareInstance.userId)})?.userId
                             if partnerId != nil {
                                 let user = users.first(where: {$0.id == partnerId})
                                 item.name = user?.name
@@ -399,7 +397,7 @@ public class ChatSDK: NSObject {
     
     private func addInfoMessages(messages: [BlaMessage], completion: @escaping ([BlaMessage]) -> Void) {
         if messages.count > 0 {
-            self.channelModels.getUserInChannel(channelId: messages[0].channelId!) { (result, error) in
+            self.channelModels!.getUserInChannel(channelId: messages[0].channelId!) { (result, error) in
                 if let userInChannels = result {
                     var userIds = [String]()
                     for item in messages {
@@ -407,12 +405,12 @@ public class ChatSDK: NSObject {
                             userIds.append(item.authorId!)
                         }
                     }
-                    self.userModels.getUserByIds(ids: userIds) { (users, error) in
+                    self.userModels!.getUserByIds(ids: userIds) { (users, error) in
                         for item in messages {
                             item.author = users.first(where: {$0.id == item.authorId})
                             if let sentAt = item.sentAt {
                                 for userInChannel in userInChannels {
-                                    if userInChannel.userId != self.userId {
+                                    if userInChannel.userId != CacheRepository.shareInstance.userId {
                                         if let date = userInChannel.lastReceive, date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
                                             if let user = users.first(where: {$0.id == userInChannel.userId}) {
                                                 item.receivedBy.append(user)
@@ -444,13 +442,13 @@ public class ChatSDK: NSObject {
         case "new_message":
             let dao = BlaMessageDAO(json: event["payload"])
             let message = BlaMessage(dao: dao)
-            channelModels.updateLastMessage(channelId: message.channelId!, lastMessageId: message.id!) { (channel, error) in
+            channelModels!.updateLastMessage(channelId: message.channelId!, lastMessageId: message.id!) { (channel, error) in
             }
-            messageModels.saveMessage(message: message)
-            if (message.authorId != self.userId) {
+            messageModels!.saveMessage(message: message)
+            if (message.authorId != CacheRepository.shareInstance.userId) {
                 self.markReceiveMessage(messageId: event["payload"]["id"].stringValue, channelId: event["payload"]["channel_id"].stringValue, receiveId: message.authorId!) { (result, error) in
                 }
-                self.channelModels.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: false) {(channel, error) in
+                self.channelModels!.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: false) {(channel, error) in
                     if let channel = channel {
                         for delegate in self.channelDelegates {
                             delegate.onUpdateChannel(channel: channel)
@@ -458,7 +456,7 @@ public class ChatSDK: NSObject {
                     }
                 }
             } else {
-                self.channelModels.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: true) {(channel, error) in
+                self.channelModels!.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: true) {(channel, error) in
                     if let channel = channel {
                         for delegate in self.channelDelegates {
                             delegate.onUpdateChannel(channel: channel)
@@ -476,9 +474,9 @@ public class ChatSDK: NSObject {
             break;
         case "typing_event":
             let channelId = event["payload"]["channel_id"].stringValue
-            self.channelModels.getChannelById(channelId: channelId) { (channel, error) in
+            self.channelModels!.getChannelById(channelId: channelId) { (channel, error) in
                 if let channel = channel {
-                    self.userModels.getUserById(user_id: event["payload"]["user_id"].stringValue) { (user) in
+                    self.userModels!.getUserById(user_id: event["payload"]["user_id"].stringValue) { (user) in
                         for item in self.channelDelegates {
                             if event["payload"]["is_typing"].boolValue == true {
                                 item.onTyping(channel: channel, user: user, type: BlaEventType.START)
@@ -492,7 +490,7 @@ public class ChatSDK: NSObject {
             break;
         case "new_channel":
             let channel = BlaChannel(dao: BlaChannelDAO(json: event["payload"]));
-            channelModels.saveChannel(channel: channel)
+            channelModels!.saveChannel(channel: channel)
             self.getUserInChannel(channelId: channel.id!) { (result, error) in
             }
             self.handleChannel(channels: [channel]) { (result) in
@@ -504,11 +502,11 @@ public class ChatSDK: NSObject {
             }
             break;
         case "mark_seen":
-            self.messageModels.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
+            self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
-                    self.channelModels.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue), lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue), lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                     self.addInfoMessages(messages: [mess]) { (messages) in
-                        self.userModels.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
+                        self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
                                 item.onUserSeen(message: messages[0], user: user, seenAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                             }
@@ -519,11 +517,11 @@ public class ChatSDK: NSObject {
             break;
             
         case "mark_receive":
-            self.messageModels.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
+            self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
-                    self.channelModels.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: nil, lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: nil, lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                     self.addInfoMessages(messages: [mess]) { (messages) in
-                        self.userModels.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
+                        self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
                                 item.onUserReceive(message: messages[0], user: user, receivedAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                             }
@@ -534,16 +532,16 @@ public class ChatSDK: NSObject {
             break;
         case "update_channel":
             let channel = BlaChannel(dao: BlaChannelDAO(json: event["payload"]))
-            self.channelModels.saveChannel(channel: channel)
+            self.channelModels!.saveChannel(channel: channel)
             for item in channelDelegates {
                 item.onNewChannel(channel: channel)
             }
             break;
         case "update_content_message":
-            self.messageModels.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (message, error) in
+            self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (message, error) in
                 if let message = message {
                     message.content = event["payload"]["content"].stringValue
-                    self.messageModels.saveMessage(message: message)
+                    self.messageModels!.saveMessage(message: message)
                     for delegate in self.messageDelegates {
                         delegate.onUpdateMessage(message: message)
                     }
@@ -551,9 +549,9 @@ public class ChatSDK: NSObject {
             }
             break;
         case "delete_message":
-            self.messageModels.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (message, error) in
+            self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (message, error) in
                 if let message = message {
-                    self.messageModels.deleteMessageLocal(messageId: event["payload"]["message_id"].stringValue)
+                    self.messageModels!.deleteMessageLocal(messageId: event["payload"]["message_id"].stringValue)
                     for delegate in self.messageDelegates {
                         delegate.onDeleteMessage(message: message)
                     }
@@ -561,9 +559,9 @@ public class ChatSDK: NSObject {
             }
             break;
         case "delete_channel":
-            self.channelModels.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
+            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
-                    self.channelModels.removeChannelLocal(channelId: event["playload"]["channel_id"].stringValue)
+                    self.channelModels!.removeChannelLocal(channelId: event["playload"]["channel_id"].stringValue)
                     for delegate in self.channelDelegates {
                         delegate.onDeleteChannel(channel: channel)
                     }
@@ -571,10 +569,10 @@ public class ChatSDK: NSObject {
             }
             break;
         case "remove_user_from_channel":
-            self.channelModels.removeUserInChannelLocal(channelId: event["playload"]["channel_id"].stringValue, userId: event["playload"]["user_id"].stringValue)
-            self.channelModels.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
+            self.channelModels!.removeUserInChannelLocal(channelId: event["playload"]["channel_id"].stringValue, userId: event["playload"]["user_id"].stringValue)
+            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
-                    self.userModels.getUserById(user_id: event["playload"]["user_id"].stringValue) { (user) in
+                    self.userModels!.getUserById(user_id: event["playload"]["user_id"].stringValue) { (user) in
                         for delegate in self.channelDelegates {
                             delegate.onMemberLeave(channel: channel, user: user)
                         }
@@ -583,11 +581,11 @@ public class ChatSDK: NSObject {
             }
             break;
         case "invite_user":
-            self.channelModels.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
+            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
                     for item in event["playload"]["user_ids"].arrayValue {
-                        self.channelModels.updateUserInChannel(channelId: event["playload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt, lastReceive: channel.createdAt)
-                        self.userModels.getUserById(user_id: item.stringValue) { (user) in
+                        self.channelModels!.updateUserInChannel(channelId: event["playload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt, lastReceive: channel.createdAt)
+                        self.userModels!.getUserById(user_id: item.stringValue) { (user) in
                             for delegate in self.channelDelegates {
                                 delegate.onMemberLeave(channel: channel, user: user)
                             }
