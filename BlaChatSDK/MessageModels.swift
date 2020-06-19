@@ -26,7 +26,7 @@ class MessageModels: NSObject {
                 }
                 self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
                     , lastSeen: timeNow, lastReceive: timeNow))
-                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow, customData: customData) { (json, error) in
+                self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow, type: type, customData: customData) { (json, error) in
                     if let err = error {
                         completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
                     }
@@ -45,7 +45,7 @@ class MessageModels: NSObject {
     }
     
     func syncMessage(message: BlaMessage, completion: @escaping(BlaMessage?, Error?) -> Void) {
-        self.messageRemote.sendMessage(channelId: message.channelId!, message: message.content!, sentAt: message.createdAt?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, customData: message.customData) { (json, error) in
+        self.messageRemote.sendMessage(channelId: message.channelId!, message: message.content!, sentAt: message.createdAt?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, type: message.type?.rawValue ?? 0, customData: message.customData) { (json, error) in
             if let err = error {
                 completion(nil, err)
             }

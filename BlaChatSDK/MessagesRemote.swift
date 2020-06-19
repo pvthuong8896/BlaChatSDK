@@ -12,11 +12,12 @@ import Alamofire
 
 class MessagesRemote: BaseRepositoryRemote {
     
-    func sendMessage(channelId: String, message: String, sentAt: Double, customData: [String: Any]?, completion: @escaping(JSON?, Error?) -> Void) {
+    func sendMessage(channelId: String, message: String, sentAt: Double, type: Int, customData: [String: Any]?, completion: @escaping(JSON?, Error?) -> Void) {
         var param = [String: Any]()
         param["channel_id"] = channelId
         param["message"] = message
         param["sent_at"] = Int(sentAt)
+        param["type"] = type
         if let customData = customData {
             if let theJSONData = try?  JSONSerialization.data(
                 withJSONObject: customData ?? [String: Any](),

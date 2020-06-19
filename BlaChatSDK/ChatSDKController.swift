@@ -238,8 +238,10 @@ public class ChatSDK: NSObject {
     }
     
     public func markReceiveMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        messageModels!.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
-            completion(result, error)
+        if (receiveId != CacheRepository.shareInstance.userId) {
+            messageModels!.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
+                completion(result, error)
+            }
         }
     }
     
@@ -251,8 +253,10 @@ public class ChatSDK: NSObject {
                 }
             }
         }
-        messageModels!.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
-            completion(result, error)
+        if (receiveId != CacheRepository.shareInstance.userId) {
+            messageModels!.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
+                completion(result, error)
+            }
         }
     }
     
