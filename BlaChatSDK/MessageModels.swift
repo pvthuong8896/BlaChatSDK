@@ -105,28 +105,36 @@ class MessageModels: NSObject {
         messageLocal.saveMessage(message: message)
     }
     
-    func markReceiveMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+    func markReceiveMessage(channelId: String, messageId: String, completion: @escaping(Bool?, Error?) -> Void) {
         let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
         self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: nil, lastReceive: timeNow))
-        messageRemote.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in
-            if let err = error {
-                completion(false, err)
-            } else {
-                completion(true, nil)
+        self.getMessageById(messageId: messageId) { (message, error) in
+            if let message = message, message.authorId != CacheRepository.shareInstance.userId {
+                self.messageRemote.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: message.authorId!) { (json, error) in
+                    if let err = error {
+                        completion(false, err)
+                    } else {
+                        completion(true, nil)
+                    }
+                }
             }
         }
     }
     
-    func markSeenMessage(channelId: String, messageId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+    func markSeenMessage(channelId: String, messageId: String, completion: @escaping(Bool?, Error?) -> Void) {
         let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
         self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: timeNow, lastReceive: timeNow))
-        messageRemote.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (json, error) in
-            if let err = error {
-                completion(false, err)
-            } else {
-                completion(true, nil)
+        self.getMessageById(messageId: messageId) { (message, error) in
+            if let message = message, message.authorId != CacheRepository.shareInstance.userId {
+                self.messageRemote.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: message.authorId!) { (json, error) in
+                    if let err = error {
+                        completion(false, err)
+                    } else {
+                        completion(true, nil)
+                    }
+                }
             }
         }
     }

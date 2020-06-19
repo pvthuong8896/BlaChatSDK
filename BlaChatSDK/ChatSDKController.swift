@@ -203,8 +203,8 @@ public class ChatSDK: NSObject {
         }
     }
     
-    public func createChannel(name: String, userIds: [String], type: BlaChannelType, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels!.createChannel(name: name, userIds: userIds, type: type.rawValue, customData: customData) { (channel, error) in
+    public func createChannel(name: String, avatar: String, userIds: [String], type: BlaChannelType, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelModels!.createChannel(name: name, avatar: avatar, userIds: userIds, type: type.rawValue, customData: customData) { (channel, error) in
             completion(channel, error)
         }
     }
@@ -237,15 +237,13 @@ public class ChatSDK: NSObject {
         }
     }
     
-    public func markReceiveMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
-        if (receiveId != CacheRepository.shareInstance.userId) {
-            messageModels!.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
-                completion(result, error)
-            }
+    public func markReceiveMessage(messageId: String, channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
+        messageModels!.markReceiveMessage(channelId: channelId, messageId: messageId) { (result, error) in
+            completion(result, error)
         }
     }
     
-    public func markSeenMessage(messageId: String, channelId: String, receiveId: String, completion: @escaping(Bool?, Error?) -> Void) {
+    public func markSeenMessage(messageId: String, channelId: String, completion: @escaping(Bool?, Error?) -> Void) {
         self.channelModels!.updateNumberMessageUnread(channelId: channelId, isResetCount: true) {(channel, error) in
             if let channel = channel {
                 for delegate in self.channelDelegates {
@@ -253,18 +251,19 @@ public class ChatSDK: NSObject {
                 }
             }
         }
-        if (receiveId != CacheRepository.shareInstance.userId) {
-            messageModels!.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: receiveId) { (result, error) in
-                completion(result, error)
-            }
+        messageModels!.markSeenMessage(channelId: channelId, messageId: messageId) { (result, error) in
+            completion(result, error)
         }
     }
     
     public func createMessage(content: String, channelId: String, type: BlaMessageType, customData: [String : Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
         messageModels!.sendMessage(channelId: channelId, type: type.rawValue, message: content, customData: customData) { (message, error) in
-            self.userModels!.getUserById(user_id: CacheRepository.shareInstance.userId) { (user) in
-                message?.author = user
-                completion(message, error)
+            if let message = message {
+                self.addInfoMessages(messages: [message]) { (result) in
+                    completion(result[0], nil)
+                }
+            } else {
+                completion(nil, error)
             }
         }
     }
@@ -450,7 +449,7 @@ public class ChatSDK: NSObject {
             }
             messageModels!.saveMessage(message: message)
             if (message.authorId != CacheRepository.shareInstance.userId) {
-                self.markReceiveMessage(messageId: event["payload"]["id"].stringValue, channelId: event["payload"]["channel_id"].stringValue, receiveId: message.authorId!) { (result, error) in
+                self.markReceiveMessage(messageId: event["payload"]["id"].stringValue, channelId: event["payload"]["channel_id"].stringValue) { (result, error) in
                 }
                 self.channelModels!.updateNumberMessageUnread(channelId: event["payload"]["channel_id"].stringValue, isResetCount: false) {(channel, error) in
                     if let channel = channel {

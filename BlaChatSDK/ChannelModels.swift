@@ -21,8 +21,8 @@ class ChannelModels: NSObject {
         }
     }
     
-    func createChannel(name: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelRemote.createChannel(name: name, userIds: userIds, type: type, customData: customData) { (json, error) in
+    func createChannel(name: String, avatar: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelRemote.createChannel(name: name, avatar: avatar, userIds: userIds, type: type, customData: customData) { (json, error) in
             guard let json = json else {
                 completion(nil , error)
                 return

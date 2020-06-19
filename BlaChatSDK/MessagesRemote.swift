@@ -20,7 +20,7 @@ class MessagesRemote: BaseRepositoryRemote {
         param["type"] = type
         if let customData = customData {
             if let theJSONData = try?  JSONSerialization.data(
-                withJSONObject: customData ?? [String: Any](),
+                withJSONObject: customData,
               options: .prettyPrinted
               ),
               let jsonString = String(data: theJSONData,

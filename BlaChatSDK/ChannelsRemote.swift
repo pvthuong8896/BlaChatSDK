@@ -24,13 +24,14 @@ class ChannelsRemote: BaseRepositoryRemote {
         }
     }
     
-    func createChannel(name: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (JSON?, Error?) -> Void) {
+    func createChannel(name: String, avatar: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (JSON?, Error?) -> Void) {
         var param = [String: Any]()
         param["name"] = name
         param["userIds"] = userIds
         param["type"] = type
+        param["avatar"] = avatar
         if let theJSONData = try?  JSONSerialization.data(
-            withJSONObject: customData ?? [String: Any](),
+            withJSONObject: customData,
           options: .prettyPrinted
           ),
           let jsonString = String(data: theJSONData,
