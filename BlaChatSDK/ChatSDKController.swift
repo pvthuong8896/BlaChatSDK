@@ -353,11 +353,9 @@ public class ChatSDK: NSObject {
         self.channelModels!.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
             if let userInChannels = result {
                 var userIds = [String]()
-                for item in channels {
-                    if let lastMessage = item.lastMessage {
-                        if userIds.firstIndex(of: lastMessage.authorId!) == nil {
-                            userIds.append(lastMessage.authorId!)
-                        }
+                for item in userInChannels {
+                    if userIds.firstIndex(of: item.userId!) == nil {
+                        userIds.append(item.userId!)
                     }
                 }
                 self.userModels!.getUserByIds(ids: userIds) { (users, error) in
