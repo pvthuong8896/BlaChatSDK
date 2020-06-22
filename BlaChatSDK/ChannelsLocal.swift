@@ -186,8 +186,8 @@ class ChannelsLocal: NSObject {
                     let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, is_system_message: isSystemMessage, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
 
                     channel.lastMessage = message
-                    completion(channel, nil)
                 }
+                completion(channel, nil)
             }
         } catch {
             print("run get channel error ", error)

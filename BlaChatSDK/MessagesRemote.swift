@@ -109,8 +109,8 @@ class MessagesRemote: BaseRepositoryRemote {
         param["message_id"] = messageId
         param["channel_id"] = channelId
         let request = alamoFireManager.request(
-            Constants.domain + "/v1/messages/update",
-            method: .put,
+            Constants.domain + "/v1/messages/delete",
+            method: .delete,
             parameters: param,
             encoding: JSONEncoding.default,
             headers: self.headers

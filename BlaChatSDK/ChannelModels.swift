@@ -167,7 +167,7 @@ class ChannelModels: NSObject {
                             let channel = BlaChannel(dao: BlaChannelDAO(json: json["data"].arrayValue[0]))
                             completion(channel, nil)
                         } else {
-                            completion(nil, nil)
+                            completion(nil, error)
                         }
                     } else {
                         completion(nil, error)

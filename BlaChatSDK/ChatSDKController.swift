@@ -13,7 +13,7 @@ import SwiftyJSON
 public protocol BlaMessageDelegate: NSObjectProtocol {
     func onNewMessage(message: BlaMessage)
     func onUpdateMessage(message: BlaMessage)
-    func onDeleteMessage(message: BlaMessage)
+    func onDeleteMessage(messageId: String)
     func onUserSeen(message: BlaMessage, user: BlaUser, seenAt: Date)
     func onUserReceive(message: BlaMessage, user: BlaUser, receivedAt: Date)
 }
@@ -21,7 +21,7 @@ public protocol BlaMessageDelegate: NSObjectProtocol {
 public protocol BlaChannelDelegate: NSObjectProtocol {
     func onNewChannel(channel: BlaChannel)
     func onUpdateChannel(channel: BlaChannel)
-    func onDeleteChannel(channel: BlaChannel)
+    func onDeleteChannel(channelId: String)
     func onTyping(channel: BlaChannel, user: BlaUser, type: BlaEventType)
     func onMemberJoin(channel: BlaChannel, user: BlaUser)
     func onMemberLeave(channel: BlaChannel, user: BlaUser)
@@ -550,30 +550,22 @@ public class ChatSDK: NSObject {
             }
             break;
         case "delete_message":
-            self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (message, error) in
-                if let message = message {
-                    self.messageModels!.deleteMessageLocal(messageId: event["payload"]["message_id"].stringValue)
-                    for delegate in self.messageDelegates {
-                        delegate.onDeleteMessage(message: message)
-                    }
-                }
+            self.messageModels!.deleteMessageLocal(messageId: event["payload"]["message_id"].stringValue)
+            for delegate in self.messageDelegates {
+                delegate.onDeleteMessage(messageId: event["payload"]["message_id"].stringValue)
             }
             break;
         case "delete_channel":
-            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
-                if let channel = channel {
-                    self.channelModels!.removeChannelLocal(channelId: event["playload"]["channel_id"].stringValue)
-                    for delegate in self.channelDelegates {
-                        delegate.onDeleteChannel(channel: channel)
-                    }
-                }
+            self.channelModels!.removeChannelLocal(channelId: event["payload"]["channel_id"].stringValue)
+            for delegate in self.channelDelegates {
+                delegate.onDeleteChannel(channelId: event["payload"]["channel_id"].stringValue)
             }
             break;
         case "remove_user_from_channel":
-            self.channelModels!.removeUserInChannelLocal(channelId: event["playload"]["channel_id"].stringValue, userId: event["playload"]["user_id"].stringValue)
-            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
+            self.channelModels!.removeUserInChannelLocal(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["user_id"].stringValue)
+            self.channelModels!.getChannelById(channelId: event["payload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
-                    self.userModels!.getUserById(user_id: event["playload"]["user_id"].stringValue) { (user) in
+                    self.userModels!.getUserById(user_id: event["payload"]["user_id"].stringValue) { (user) in
                         for delegate in self.channelDelegates {
                             delegate.onMemberLeave(channel: channel, user: user)
                         }
@@ -582,10 +574,10 @@ public class ChatSDK: NSObject {
             }
             break;
         case "invite_user":
-            self.channelModels!.getChannelById(channelId: event["playload"]["channel_id"].stringValue) { (channel, error) in
+            self.channelModels!.getChannelById(channelId: event["payload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
-                    for item in event["playload"]["user_ids"].arrayValue {
-                        self.channelModels!.updateUserInChannel(channelId: event["playload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt, lastReceive: channel.createdAt)
+                    for item in event["payload"]["user_ids"].arrayValue {
+                        self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt, lastReceive: channel.createdAt)
                         self.userModels!.getUserById(user_id: item.stringValue) { (user) in
                             for delegate in self.channelDelegates {
                                 delegate.onMemberLeave(channel: channel, user: user)
