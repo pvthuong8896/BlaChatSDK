@@ -43,7 +43,28 @@ public class BlaUser: Codable {
             } catch {
                 self.customData = [String: Any]()
             }
+        } else {
+            self.customData = [String: Any]()
         }
+    }
+    
+    public init(json: JSON) {
+        self.id = json["id"].stringValue
+        self.name = json["name"].stringValue
+        self.avatar = json["avatar"].stringValue
+        if (json["lastActiveAt"].doubleValue != 0) {
+            self.lastActiveAt = Date.init(timeIntervalSince1970: json["lastActiveAt"].doubleValue)
+        }
+        if let data = json["customData"].stringValue.data(using: .utf8) {
+            do {
+                self.customData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            } catch {
+                self.customData = [String: Any]()
+            }
+        } else {
+            self.customData = [String: Any]()
+        }
+        self.online = json["online"].boolValue
     }
     
     required public init(from decoder: Decoder) throws {

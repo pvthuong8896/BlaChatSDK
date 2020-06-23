@@ -33,6 +33,8 @@ public class BlaChannel: Codable {
             } catch {
                 self.customData = [String: Any]()
             }
+        } else {
+            self.customData = [String: Any]()
         }
         self.type = BlaChannelType.init(rawValue: dao.type ?? 0)
         if let lastMessages = dao.lastMessages, lastMessages.count > 0 {
@@ -41,6 +43,27 @@ public class BlaChannel: Codable {
         }
     }
     
+    public init(json: JSON) {
+        self.id = json["id"].stringValue
+        self.name = json["name"].stringValue
+        self.avatar = json["avatar"].stringValue
+        self.createdAt = Date.init(timeIntervalSince1970: json["createdAt"].doubleValue)
+        self.updatedAt = Date.init(timeIntervalSince1970: json["updatedAt"].doubleValue)
+        self.type = BlaChannelType.init(rawValue: json["type"].intValue)
+        if let data = json["customData"].stringValue.data(using: .utf8) {
+            do {
+                self.customData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            } catch {
+                self.customData = [String: Any]()
+            }
+        } else {
+            self.customData = [String: Any]()
+        }
+        self.lastMessage = BlaMessage.init(json: json["lastMessage"])
+        self.lastMessageId = json["id"].stringValue
+        self.numberMessageUnread = json["id"].stringValue
+    }
+     
     public init(id: String?, name: String?, avatar: String?, createdAt: Double?, updatedAt: Double?, type: Int?, lastMessageId: String?, customData: String?, number_message_unread: Int?) {
         if let id = id {
             self.id = id

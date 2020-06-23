@@ -37,10 +37,36 @@ public class BlaMessage: Codable {
             } catch {
                 self.customData = [String: Any]()
             }
+        } else {
+            self.customData = [String: Any]()
         }
 
         self.createdAt = dao.createdAt
         self.sentAt = dao.sentAt
+    }
+    
+    public init(json: JSON) {
+        self.id = json["id"].stringValue
+        self.authorId = json["authorId"].stringValue
+        self.channelId = json["channelId"].stringValue
+        self.content = json["content"].stringValue
+        self.type = BlaMessageType.init(rawValue: json["type"].intValue)
+        self.isSystemMessage = json["isSystemMessage"].boolValue
+        self.createdAt = Date.init(timeIntervalSince1970: json["createdAt"].doubleValue)
+        self.updatedAt = Date.init(timeIntervalSince1970: json["updatedAt"].doubleValue)
+        self.sentAt = Date.init(timeIntervalSince1970: json["sentAt"].doubleValue)
+        if let data = json["customData"].stringValue.data(using: .utf8) {
+            do {
+                self.customData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            } catch {
+                self.customData = [String: Any]()
+            }
+        } else {
+            self.customData = [String: Any]()
+        }
+        self.author = BlaUser.init(json: json["author"])
+        self.receivedBy = []
+        self.seenBy = []
     }
     
     public init(id: String?, author_id: String?, channel_id: String?, content: String?, type: Int?, is_system_message: Bool?, created_at: Double?, updated_at: Double?, sent_at: Double?, custom_data: String?) {
@@ -74,6 +100,8 @@ public class BlaMessage: Codable {
             } catch {
                 self.customData = [String: Any]()
             }
+        } else {
+            self.customData = [String: Any]()
         }
         if let isSystemMessage = is_system_message {
             self.isSystemMessage = isSystemMessage
