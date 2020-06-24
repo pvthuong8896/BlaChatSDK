@@ -301,9 +301,69 @@ class ChannelsLocal: NSObject {
         }
     }
     
+    func searchChannels(query: String, completion: @escaping([BlaChannel]?, Error?) -> Void) {
+        do {
+            let filter = tblChannel.filter(self.name.like("%\(query)"))
+            let channels = try
+                DbConnection.shareInstance.connection?.prepare(filter
+                    .join(.leftOuter, tblMessage, on: tblMessage[id]==tblChannel[last_message_id])
+            )
+            var listChannel = [BlaChannel]()
+            if let sequence: AnySequence<Row> = channels {
+                for row in sequence {
+                    // Row for channel
+                    let channelId = try row.get(tblChannel[id])
+                    let channelName = try row.get(tblChannel[name])
+                    let channelAvatar = try row.get(tblChannel[avatar])
+                    let channelCreatedAt = try row.get(tblChannel[created_at])
+                    let channelUpdatedAt = try row.get(tblChannel[updated_at])
+                    let channelType = try row.get(tblChannel[type])
+                    let channelLastMessageId = try row.get(tblChannel[last_message_id])
+                    let channelCustomData = try row.get(tblChannel[custom_data])
+                    let channelNumberMessageUnread = try row.get(tblChannel[number_message_unread])
+                    let messageId = try row.get(tblMessage[id])
+                    
+                    
+                    let channel = BlaChannel(id: channelId, name: channelName, avatar: channelAvatar, createdAt: channelCreatedAt, updatedAt: channelUpdatedAt, type: channelType, lastMessageId: channelLastMessageId, customData: channelCustomData, number_message_unread: channelNumberMessageUnread)
+                    if messageId != nil {
+                        // Row for lastMessage
+                        let messageId = try row.get(tblMessage[id])
+                        let messageAuthorId = try row.get(tblMessage[author_id])
+                        let messageChannelId = try row.get(tblMessage[channel_id])
+                        let messageContent = try row.get(tblMessage[content])
+                        let messageType = try row.get(tblMessage[type])
+                        let isSystemMessage = try row.get(tblMessage[is_system_message])
+                        let messageCreatedAt = try row.get(tblMessage[created_at])
+                        let messageUpdatedAt = try row.get(tblMessage[updated_at])
+                        let messageSentAt = try row.get(tblMessage[sent_at])
+                        let messageCustomData = try row.get(tblMessage[custom_data])
+                        
+                        let message = BlaMessage(id: messageId, author_id: messageAuthorId, channel_id: messageChannelId, content: messageContent, type: messageType, is_system_message: isSystemMessage, created_at: messageCreatedAt, updated_at: messageUpdatedAt, sent_at: messageSentAt, custom_data: messageCustomData)
+                        
+                        channel.lastMessage = message
+                    }
+                    listChannel.append(channel)
+                }
+            }
+            completion(listChannel, nil)
+        } catch {
+            print("run get channel error ", error)
+            completion(nil, error)
+        }
+    }
+    
     func removeChannel(channelId: String) {
         do {
             let filter = self.tblChannel.filter(self.id == channelId).delete()
+            try DbConnection.shareInstance.connection?.run(filter)
+        } catch {
+            print("Error to delete channel")
+        }
+    }
+    
+    func removeAllChannel() {
+        do {
+            let filter = self.tblChannel.delete()
             try DbConnection.shareInstance.connection?.run(filter)
         } catch {
             print("Error to delete channel")

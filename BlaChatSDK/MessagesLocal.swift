@@ -236,4 +236,13 @@ class MessagesLocal: NSObject {
             print("remove message error")
         }
     }
+    
+    func removeAllChannel() {
+        do {
+            let filter = tblMessage.delete()
+            try DbConnection.shareInstance.connection?.run(filter)
+        } catch {
+            print("remove message error")
+        }
+    }
 }

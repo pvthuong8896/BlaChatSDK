@@ -128,4 +128,13 @@ class UsersLocal: NSObject {
             completion(nil, error)
         }
     }
+    
+    func removeAllUser() {
+        do {
+            let filter = tblUser.delete()
+            try DbConnection.shareInstance.connection?.run(filter)
+        } catch {
+            print("remove message error")
+        }
+    }
 }

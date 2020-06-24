@@ -14,6 +14,11 @@ class ChannelModels: NSObject {
     var channelLocal = ChannelsLocal()
     let channelRemote = ChannelsRemote()
     let userInChannelLocal = UserInChannelLocal()
+    var userModel: UserModels?
+    
+    init(userModel: UserModels) {
+        self.userModel = userModel
+    }
     
     func getMissingEvent(lastEventId: String, completion: @escaping(JSON?, Error?) -> Void) {
         self.channelRemote.getMissingEvent(lastEventId: lastEventId) { (json, error) in
@@ -38,15 +43,13 @@ class ChannelModels: NSObject {
     func getChannel(lastId: String?, limit: Int, completion: @escaping ([BlaChannel]?, Error?) -> Void) {
         channelLocal.getChannel(limit: limit, lastId: lastId) { (channels, error) in
             if let channels = channels, channels.count > 0 {
-                var listChannelResult = [BlaChannel]()
-                listChannelResult = channels
                 var channelIds = [String]()
                 for item in channels {
                     channelIds.append(item.id!)
                 }
                 self.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
                 }
-                completion(listChannelResult, error)
+                completion(channels, error)
             } else {
                 self.channelRemote.getChannel(lastId: lastId, limit: limit) { (json, error) in
                     guard let json = json else {
@@ -66,11 +69,33 @@ class ChannelModels: NSObject {
                         let channel = BlaChannel(dao: dao)
                         channels.append(channel)
                         channelIds.append(channel.id!)
-                        self.saveChannel(channel: channel)
                     }
-                    completion(channels, error)
                     self.getUserInMultiChannel(channelIds: channelIds) { (result, error) in
+                        guard let result = result else {
+                            completion(nil, error)
+                            return
+                        }
+                        var userIds = [String]()
+                        for item in result {
+                            userIds.append(item.userId!)
+                        }
+                        self.userModel?.getUserByIds(ids: userIds, completion: { (users, error) in
+                            for (index, channel) in channels.enumerated() {
+                                if channel.type == BlaChannelType.DIRECT {
+                                    let userInChannel = result.first(where: {$0.channelId == channel.id && $0.userId != CacheRepository.shareInstance.userId})
+                                    
+                                    let user = users.first(where: {$0.id == userInChannel?.userId})
+                                    if (user != nil) {
+                                        channels[index].name = user?.name
+                                        channels[index].avatar = user?.avatar
+                                    }
+                                }
+                                self.saveChannel(channel: channel)
+                            }
+                            completion(channels, nil)
+                        })
                     }
+                    
                 }
             }
         }
@@ -114,7 +139,7 @@ class ChannelModels: NSObject {
                         for subJson in json["data"].arrayValue {
                             let item = BlaUserInChannel(json: subJson, channelId: channelId)
                             userInChannels.append(item)
-                            self.updateUserInChannel(channelId: item.channelId, userId: item.userId, lastSeen: item.lastSeen, lastReceive: item.lastReceive)
+                            self.saveUserInChannel(userInChannel: item)
                         }
                         completion(userInChannels, error)
                     } else {
@@ -138,7 +163,7 @@ class ChannelModels: NSObject {
                             for item in subJson["list_member"].arrayValue {
                                 let userInChannel = BlaUserInChannel(json: item, channelId: tmpChannelId)
                                 result.append(userInChannel)
-                                self.updateUserInChannel(channelId: userInChannel.channelId, userId: userInChannel.userId, lastSeen: userInChannel.lastSeen, lastReceive: userInChannel.lastReceive)
+                                self.saveUserInChannel(userInChannel: userInChannel)
                             }
                         }
                         completion(result, error)
@@ -152,8 +177,8 @@ class ChannelModels: NSObject {
     
     
     
-    func updateUserInChannel(channelId: String?, userId: String?, lastSeen: Date?, lastReceive: Date?) {
-        self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: lastSeen?.timeIntervalSince1970, lastReceive: lastReceive?.timeIntervalSince1970))
+    func saveUserInChannel(userInChannel: BlaUserInChannel) {
+        self.userInChannelLocal.saveUserInChannel(userInChannel: userInChannel)
     }
     
     func getChannelById(channelId: String, completion: @escaping(BlaChannel?, Error?) -> Void) {
@@ -203,6 +228,12 @@ class ChannelModels: NSObject {
         }
     }
     
+    func searchChannels(query: String, completion: @escaping ([BlaChannel]?, Error?) -> Void) {
+        channelLocal.searchChannels(query: query) { (channels, error) in
+            completion(channels, error)
+        }
+    }
+    
     func inviteUserToChannel(channelId: String, userIds: [String], completion: @escaping(Bool?, Error?) -> Void) {
         channelRemote.inviteUserToChannel(channelId: channelId, userIds: userIds) { (json, error) in
             if let err = error {
@@ -210,7 +241,7 @@ class ChannelModels: NSObject {
             } else {
                 for subJson in json!["data"].arrayValue {
                     let userInChannel = BlaUserInChannel(json: subJson, channelId: channelId)
-                    self.updateUserInChannel(channelId: channelId, userId: userInChannel.userId, lastSeen: userInChannel.lastSeen, lastReceive: userInChannel.lastReceive)
+                    self.saveUserInChannel(userInChannel: userInChannel)
                 }
                 completion(true, nil)
             }
@@ -242,5 +273,10 @@ class ChannelModels: NSObject {
                 completion(channel, error)
             }
         }
+    }
+    
+    func removeAllChannel() {
+        self.channelLocal.removeAllChannel()
+        self.userInChannelLocal.removeAllUserInChannel()
     }
 }

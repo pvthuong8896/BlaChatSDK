@@ -131,4 +131,8 @@ class UserModels: NSObject {
         }
         
     }
+    
+    func removeAllUser() {
+        self.userLocal.removeAllUser()
+    }
 }

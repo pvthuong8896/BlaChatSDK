@@ -56,9 +56,9 @@ public class ChatSDK: NSObject {
     public func initBlaChatSDK(userId: String, token: String, completion: @escaping (Bool?, Error?) -> Void) {
         CacheRepository.shareInstance.userId = userId
         CacheRepository.shareInstance.token = token
-        channelModels = ChannelModels()
-        messageModels = MessageModels()
         userModels = UserModels()
+        channelModels = ChannelModels(userModel: userModels!)
+        messageModels = MessageModels()
         CentrifugoController.shareInstance.delegate = self
         self.getAllUser()
         self.syncMessage()
@@ -69,7 +69,9 @@ public class ChatSDK: NSObject {
         if let lastEventId = UserDefaults.standard.string(forKey: "lastEventId") {
             self.channelModels!.getMissingEvent(lastEventId: lastEventId) { (json, error) in
                 if let json = json {
-                    if json["data"].arrayValue.count > 0 {
+                    if json["data"].arrayValue.count > Constants.numberEventResetDatabase {
+                        self.removeAllDoucumentLocal()
+                    } else {
                         for item in json["data"].arrayValue {
                             UserDefaults.standard.setValue(json["id"].stringValue, forKey: "lastEventId")
                             let event = JSON.init(parseJSON: item["payload"].stringValue)
@@ -300,6 +302,12 @@ public class ChatSDK: NSObject {
         }
     }
     
+    public func searchChannels(query: String, completion: @escaping([BlaChannel]?, Error?) -> Void) {
+        self.channelModels?.searchChannels(query: query, completion: { (channels, error) in
+            completion(channels, error)
+        })
+    }
+    
     public func getUserPresence(completion: @escaping([BlaUser]?, Error?) -> Void) {
         var userIds = [String]()
         for item in CacheRepository.shareInstance.validUsers {
@@ -345,6 +353,13 @@ public class ChatSDK: NSObject {
         }
     }
     
+    private func removeAllDoucumentLocal() {
+        self.channelModels?.removeAllChannel()
+        self.messageModels?.removeAllmessage()
+        self.userModels?.removeAllUser()
+        UserDefaults.standard.setValue("", forKey: "lastEventId")
+    }
+    
     private func handleChannel(channels: [BlaChannel], completion: @escaping ([BlaChannel]) -> Void) {
         var channelIds = [String]()
         for item in channels {
@@ -360,25 +375,19 @@ public class ChatSDK: NSObject {
                 }
                 self.userModels!.getUserByIds(ids: userIds) { (users, error) in
                     for item in channels {
-                        if item.type == BlaChannelType.DIRECT {
-                            let partnerId = userInChannels.first(where: {($0.channelId == item.id) && ($0.userId != CacheRepository.shareInstance.userId)})?.userId
-                            if partnerId != nil {
-                                let user = users.first(where: {$0.id == partnerId})
-                                item.name = user?.name
-                                item.avatar = user?.avatar
-                            }
-                        }
                         if let lastMessage = item.lastMessage {
                             lastMessage.author = users.first(where: {$0.id == lastMessage.authorId})
                             if let sentAt = lastMessage.sentAt {
                                 for userInChannel in userInChannels {
                                     if userInChannel.channelId == item.id {
-                                        if let date = userInChannel.lastReceive, date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
+                                        if let date = userInChannel.lastReceive,
+                                            date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
                                             if let user = users.first(where: {$0.id == userInChannel.userId}) {
                                                 lastMessage.receivedBy.append(user)
                                             }
                                         }
-                                        if let date = userInChannel.lastSeen, date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
+                                        if let date = userInChannel.lastSeen,
+                                            date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
                                             if let user = users.first(where: {$0.id == userInChannel.userId}) {
                                                 lastMessage.seenBy.append(user)
                                             }
@@ -505,7 +514,8 @@ public class ChatSDK: NSObject {
         case "mark_seen":
             self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
-                    self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue), lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: event["payload"]["time"].doubleValue, lastReceive:  event["payload"]["time"].doubleValue)
+                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
                     self.addInfoMessages(messages: [mess]) { (messages) in
                         self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
@@ -520,7 +530,8 @@ public class ChatSDK: NSObject {
         case "mark_receive":
             self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
-                    self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: nil, lastReceive: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: nil, lastReceive:  event["payload"]["time"].doubleValue)
+                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
                     self.addInfoMessages(messages: [mess]) { (messages) in
                         self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
                             for item in self.messageDelegates {
@@ -577,7 +588,8 @@ public class ChatSDK: NSObject {
             self.channelModels!.getChannelById(channelId: event["payload"]["channel_id"].stringValue) { (channel, error) in
                 if let channel = channel {
                     for item in event["payload"]["user_ids"].arrayValue {
-                        self.channelModels!.updateUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt, lastReceive: channel.createdAt)
+                        let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt?.timeIntervalSince1970, lastReceive: channel.createdAt?.timeIntervalSince1970)
+                        self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
                         self.userModels!.getUserById(user_id: item.stringValue) { (user) in
                             for delegate in self.channelDelegates {
                                 delegate.onMemberLeave(channel: channel, user: user)

@@ -163,4 +163,8 @@ class MessageModels: NSObject {
     func deleteMessageLocal(messageId: String) {
         self.messageLocal.removeMessage(messageId: messageId)
     }
+    
+    func removeAllmessage() {
+        self.messageLocal.removeAllChannel()
+    }
 }

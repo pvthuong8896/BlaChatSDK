@@ -40,5 +40,4 @@ public class BlaUserInChannel: Codable {
         self.lastReceive = Date.init(timeIntervalSince1970: json["last_receive"].doubleValue)
         self.lastSeen = Date.init(timeIntervalSince1970: json["last_seen"].doubleValue)
     }
-    
 }

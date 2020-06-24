@@ -149,4 +149,13 @@ class UserInChannelLocal: NSObject {
             print("error to delete user in channel")
         }
     }
+    
+    func removeAllUserInChannel() {
+        do {
+            let filter = tblUserInChannel.delete()
+            try DbConnection.shareInstance.connection?.run(filter)
+        } catch {
+            print("remove message error")
+        }
+    }
 }
