@@ -35,6 +35,7 @@ public class ChatSDK: NSObject {
     private var channelModels: ChannelModels?
     private var messageModels: MessageModels?
     private var userModels: UserModels?
+    private var appRepository: AppRepository?
     private var client: CentrifugeClient?
     private var sub: CentrifugeSubscription?
     private var isConnected: Bool = false
@@ -43,7 +44,6 @@ public class ChatSDK: NSObject {
     private var messageDelegates = [BlaMessageDelegate]()
     private var channelDelegates = [BlaChannelDelegate]()
     private var presenceDelegates = [BlaPresenceListener]()
-    
     override init() {
         super.init()
     }
@@ -333,6 +333,16 @@ public class ChatSDK: NSObject {
             }
             completion(userPresences, error)
         }
+    }
+    
+    public func updateFCMToken(fcmToken: String, completion: @escaping(Bool?, Error?) -> Void) {
+        self.appRepository?.updateFCMToken(fcmToken: fcmToken, completion: { (result, error) in
+            completion(result, error)
+        })
+    }
+    
+    public func logoutBlaChatSDK() {
+        self.removeAllDoucumentLocal()
     }
     
     private func getAllUser() {

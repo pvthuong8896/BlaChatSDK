@@ -42,6 +42,7 @@
 		4C3A0F412475226E00DC010B /* ChannelsLocal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F1D2475226E00DC010B /* ChannelsLocal.swift */; };
 		4C3A0F422475226E00DC010B /* RequestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3A0F1E2475226E00DC010B /* RequestManager.swift */; };
 		4C6E4D05246D45480079102A /* BlaChatSDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 4C6E4D03246D45480079102A /* BlaChatSDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4C714EC624A37ED200301C64 /* AppRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C714EC524A37ED200301C64 /* AppRepository.swift */; };
 		7243D3DFAF452A67219DEAD8 /* Pods_BlaChatSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31B77503991BDB9BC4DF79CF /* Pods_BlaChatSDK.framework */; };
 /* End PBXBuildFile section */
 
@@ -86,6 +87,7 @@
 		4C6E4D00246D45480079102A /* BlaChatSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BlaChatSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C6E4D03246D45480079102A /* BlaChatSDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlaChatSDK.h; sourceTree = "<group>"; };
 		4C6E4D04246D45480079102A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4C714EC524A37ED200301C64 /* AppRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppRepository.swift; sourceTree = "<group>"; };
 		A3B1180C19986B64BD34F02A /* Pods-BlaChatSDK.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlaChatSDK.release.xcconfig"; path = "Target Support Files/Pods-BlaChatSDK/Pods-BlaChatSDK.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -136,6 +138,7 @@
 				4C3A0F012475226C00DC010B /* CentrifugoController.swift */,
 				4C3A0F082475226D00DC010B /* BaseRepositoryRemote.swift */,
 				4C3A0F1E2475226E00DC010B /* RequestManager.swift */,
+				4C714EC524A37ED200301C64 /* AppRepository.swift */,
 				4C3A0F062475226D00DC010B /* CacheRepository.swift */,
 				4C3A0F192475226E00DC010B /* BlaEnum.swift */,
 				4C3A0F092475226D00DC010B /* BlaChannelDAO.swift */,
@@ -304,6 +307,7 @@
 				4C3A0F362475226E00DC010B /* BlaUserDAO.swift in Sources */,
 				4C3A0F2D2475226E00DC010B /* BlaChannelDAO.swift in Sources */,
 				4C3A0F282475226E00DC010B /* MessageModels.swift in Sources */,
+				4C714EC624A37ED200301C64 /* AppRepository.swift in Sources */,
 				4C3A0F352475226E00DC010B /* BlaMessage.swift in Sources */,
 				4C3A0F212475226E00DC010B /* ChannelsRemote.swift in Sources */,
 				4C3A0F272475226E00DC010B /* BlaUser.swift in Sources */,
