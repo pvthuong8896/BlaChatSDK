@@ -303,7 +303,7 @@ class ChannelsLocal: NSObject {
     
     func searchChannels(query: String, completion: @escaping([BlaChannel]?, Error?) -> Void) {
         do {
-            let filter = tblChannel.filter(self.name.like("%\(query)"))
+            let filter = tblChannel.filter(self.name.like("%\(query)%"))
             let channels = try
                 DbConnection.shareInstance.connection?.prepare(filter
                     .join(.leftOuter, tblMessage, on: tblMessage[id]==tblChannel[last_message_id])
