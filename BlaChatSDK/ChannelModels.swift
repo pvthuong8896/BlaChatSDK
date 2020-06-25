@@ -20,12 +20,6 @@ class ChannelModels: NSObject {
         self.userModel = userModel
     }
     
-    func getMissingEvent(lastEventId: String, completion: @escaping(JSON?, Error?) -> Void) {
-        self.channelRemote.getMissingEvent(lastEventId: lastEventId) { (json, error) in
-            completion(json, error)
-        }
-    }
-    
     func createChannel(name: String, avatar: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (BlaChannel?, Error?) -> Void) {
         channelRemote.createChannel(name: name, avatar: avatar, userIds: userIds, type: type, customData: customData) { (json, error) in
             guard let json = json else {

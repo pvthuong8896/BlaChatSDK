@@ -67,7 +67,7 @@ public class ChatSDK: NSObject {
     
     private func getMissingEvent() {
         if let lastEventId = UserDefaults.standard.string(forKey: "lastEventId") {
-            self.channelModels!.getMissingEvent(lastEventId: lastEventId) { (json, error) in
+            self.appRepository?.getMissingEvent(lastEventId: lastEventId) { (json, error) in
                 if let json = json {
                     if json["data"].arrayValue.count > Constants.numberEventResetDatabase {
                         self.removeAllDoucumentLocal()
@@ -342,6 +342,8 @@ public class ChatSDK: NSObject {
     }
     
     public func logoutBlaChatSDK() {
+        self.appRepository?.removeFCMToken(completion: { (result, error) in
+        })
         self.removeAllDoucumentLocal()
     }
     
@@ -619,7 +621,6 @@ extension ChatSDK: CentrifugoControllerDelegate {
     func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
         let data = String(data: e.data, encoding: .utf8) ?? ""
         let event = JSON.init(parseJSON: data)
-        print("new event SDK ", event)
         self.handleEvent(event: event)
     }
 }

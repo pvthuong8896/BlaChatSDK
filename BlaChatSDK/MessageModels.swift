@@ -68,7 +68,7 @@ class MessageModels: NSObject {
     func getMessage(channelId: String, lastId: String?, limit: Int, completion: @escaping([BlaMessage]?, Error?) -> Void) {
         self.messageLocal.getMessages(channel_id: channelId, limit: limit, lastId: lastId) { (messages, error) in
             var listMessageResult = [BlaMessage]()
-            if let messages = messages {
+            if let messages = messages, messages.count > 0 {
                 listMessageResult = messages
                 completion(listMessageResult, error)
             } else {

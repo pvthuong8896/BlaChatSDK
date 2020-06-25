@@ -12,18 +12,6 @@ import Alamofire
 
 class ChannelsRemote: BaseRepositoryRemote {
     
-    func getMissingEvent(lastEventId: String, completion: @escaping(JSON?, Error?) -> Void) {
-        let request = alamoFireManager.request(
-            Constants.domain + "/v1/events/gets?eventId=\(lastEventId)",
-            method: .get,
-            encoding: JSONEncoding.default,
-            headers: self.headers
-        )
-        self.requestManager.startRequest(request) { (json, error) in
-            completion(json, error)
-        }
-    }
-    
     func createChannel(name: String, avatar: String, userIds: [String], type: Int, customData: [String: Any], completion: @escaping (JSON?, Error?) -> Void) {
         var param = [String: Any]()
         param["name"] = name

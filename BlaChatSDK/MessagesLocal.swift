@@ -157,7 +157,6 @@ class MessagesLocal: NSObject {
             }
             completion(listMessages, nil)
         } catch {
-            print("Get Messages error ", error)
             completion(nil, error)
         }
     }
