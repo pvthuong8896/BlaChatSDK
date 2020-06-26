@@ -102,12 +102,6 @@ public class BlaChannel: Codable {
         }
     }
     
-    public init(id: String, lastMessageId: String, updatedAt: Date) {
-        self.id = id
-        self.lastMessageId = lastMessageId
-        self.updatedAt = updatedAt
-    }
-    
     required public init(from decoder: Decoder) throws {
         
     }

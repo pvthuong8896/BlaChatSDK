@@ -141,7 +141,7 @@ class MessagesLocal: NSObject {
     
     func getMessages(channel_id: String, limit: Int, lastId: String?, completion: @escaping([BlaMessage]?, Error?) -> Void) {
         do {
-            var filter = tblMessage.filter(self.channel_id == channel_id)
+            var filter = tblMessage.filter(self.channel_id == channel_id).order(self.created_at.desc)
             if let lastId = lastId {
                 let rowLastMessage = try DbConnection.shareInstance.connection?.pluck(tblMessage.filter(self.id == lastId))
                 if let rowLastMessage = rowLastMessage, let rowCreatedAt = rowLastMessage[self.created_at] {
@@ -171,6 +171,19 @@ class MessagesLocal: NSObject {
             }
         } catch {
             print("Get Messages error ", error)
+            completion(nil, error)
+        }
+    }
+    
+    func getLastestMessage(channelId: String, completion: @escaping(BlaMessage?, Error?) -> Void) {
+        do {
+            let filter = tblMessage.filter(self.channel_id == channelId)
+            let result = try DbConnection.shareInstance.connection?.pluck(filter)
+            if let row = result {
+                let message = BlaMessage(id: row[self.id], author_id: row[self.author_id], channel_id: row[self.channel_id], content: row[self.content], type: row[self.type], is_system_message: row[self.is_system_message], created_at: row[self.created_at], updated_at: row[self.updated_at], sent_at: row[self.sent_at], custom_data: row[self.custom_data])
+                completion(message, nil)
+            }
+        } catch {
             completion(nil, error)
         }
     }
@@ -236,7 +249,7 @@ class MessagesLocal: NSObject {
         }
     }
     
-    func removeAllChannel() {
+    func removeAllMessage() {
         do {
             let filter = tblMessage.delete()
             try DbConnection.shareInstance.connection?.run(filter)

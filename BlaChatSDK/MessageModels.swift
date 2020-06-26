@@ -22,7 +22,7 @@ class MessageModels: NSObject {
                 completion(nil, err)
             } else {
                 let timeNow = Date().timeIntervalSince1970
-                self.channelLocal.updateLastMessageChannel(channel: BlaChannel(id: channelId, lastMessageId: tmpId, updatedAt: Date())) { (channel, error) in
+                self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: tmpId) { (channel, error) in
                 }
                 self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
                     , lastSeen: timeNow, lastReceive: timeNow))
@@ -35,7 +35,7 @@ class MessageModels: NSObject {
                         let mess = BlaMessage(dao: dao)
                         self.messageLocal.replaceMessage(idLocal: tmpId, message: mess) { (message, error) in
                         }
-                        self.channelLocal.updateLastMessageChannel(channel: BlaChannel(id: channelId, lastMessageId: mess.id!, updatedAt: Date())) { (result, error) in
+                        self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: mess.id!) { (result, error) in
                         }
                         completion(mess, error)
                     }
@@ -54,7 +54,8 @@ class MessageModels: NSObject {
                 let mess = BlaMessage(dao: dao)
                 self.messageLocal.replaceMessage(idLocal: message.id!, message: mess) { (message, error) in
                 }
-                self.channelLocal.updateChannel(channel: BlaChannel(id: mess.channelId!, lastMessageId: mess.id!, updatedAt: Date()))
+                self.channelLocal.updateLastMessageChannel(channelId: mess.channelId!, messageId: mess.id!) { (result, error) in
+                }
                 completion(mess, error)
             }
         }
@@ -165,6 +166,6 @@ class MessageModels: NSObject {
     }
     
     func removeAllmessage() {
-        self.messageLocal.removeAllChannel()
+        self.messageLocal.removeAllMessage()
     }
 }

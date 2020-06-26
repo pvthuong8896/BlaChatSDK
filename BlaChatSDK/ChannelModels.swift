@@ -197,7 +197,7 @@ class ChannelModels: NSObject {
     }
     
     func updateLastMessage(channelId: String, lastMessageId: String, completion: @escaping(BlaChannel?, Error?) -> Void) {
-        channelLocal.updateLastMessageChannel(channel: BlaChannel(id: channelId, lastMessageId: lastMessageId, updatedAt: Date())) { (channel, error) in
+        channelLocal.updateLastMessageChannel(channelId: channelId, messageId: lastMessageId) { (channel, error) in
             completion(channel, error)
         }
     }

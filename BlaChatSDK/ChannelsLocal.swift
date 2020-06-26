@@ -93,7 +93,7 @@ class ChannelsLocal: NSObject {
     
     func getChannel(limit: Int, lastId: String?, completion: @escaping([BlaChannel]?, Error?) -> Void) {
         do {
-            var filter = tblChannel.limit(limit)
+            var filter = tblChannel.limit(limit).order(updated_at.desc)
             if let lastId = lastId {
                 let rowLastChannel = try DbConnection.shareInstance.connection?.pluck(tblChannel.filter(self.id == lastId))
                 if let rowLastChannel = rowLastChannel, let rowUpdatedAt = rowLastChannel[self.updated_at] {
@@ -228,19 +228,16 @@ class ChannelsLocal: NSObject {
         }
     }
     
-    func updateLastMessageChannel(channel: BlaChannel, completion: @escaping(BlaChannel?, Error?) -> Void) {
+    func updateLastMessageChannel(channelId: String, messageId: String, completion: @escaping(BlaChannel?, Error?) -> Void) {
         do {
-            let channelFilter = self.tblChannel.filter(self.id == channel.id!)
+            let channelFilter = self.tblChannel.filter(self.id == channelId)
             var setter:[SQLite.Setter] = [SQLite.Setter]()
             setter.append(self.updated_at <- Date().timeIntervalSince1970)
-            if let last_message_id = channel.lastMessageId {
-                setter.append(self.last_message_id <- last_message_id)
-            }
-            setter.append(self.updated_at <- Date().timeIntervalSince1970)
+            setter.append(self.last_message_id <- messageId)
             let update = channelFilter.update(setter)
             
             try DbConnection.shareInstance.connection?.run(update)
-            self.getChannelById(channelId: channel.id!) { (channel, error) in
+            self.getChannelById(channelId: channelId) { (channel, error) in
                 completion(channel, error)
             }
         } catch {
