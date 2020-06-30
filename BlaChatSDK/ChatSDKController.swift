@@ -59,6 +59,7 @@ public class ChatSDK: NSObject {
         userModels = UserModels()
         channelModels = ChannelModels(userModel: userModels!)
         messageModels = MessageModels()
+        appRepository = AppRepository()
         CentrifugoController.shareInstance.delegate = self
         self.getAllUser()
         self.syncMessage()
@@ -72,8 +73,8 @@ public class ChatSDK: NSObject {
                     if json["data"].arrayValue.count > Constants.numberEventResetDatabase {
                         self.removeAllDoucumentLocal()
                     } else {
-                        for item in json["data"].arrayValue {
-                            UserDefaults.standard.setValue(json["id"].stringValue, forKey: "lastEventId")
+                        for item in json["data"].arrayValue.reversed() {
+                            UserDefaults.standard.setValue(item["id"].stringValue, forKey: "lastEventId")
                             let event = JSON.init(parseJSON: item["payload"].stringValue)
                             self.handleEvent(event: event)
                         }
@@ -212,7 +213,7 @@ public class ChatSDK: NSObject {
     }
     
     public func updateChannel(channel: BlaChannel, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelModels!.updateChannel(channelId: channel.id!, name: channel.name ?? "", avatar: channel.avatar ?? "") { (channel, error) in
+        channelModels!.updateChannel(channelId: channel.id!, name: channel.name, avatar: channel.avatar, customData: channel.customData) { (channel, error) in
             completion(channel, error)
         }
     }
@@ -391,7 +392,7 @@ public class ChatSDK: NSObject {
                             lastMessage.author = users.first(where: {$0.id == lastMessage.authorId})
                             if let sentAt = lastMessage.sentAt {
                                 for userInChannel in userInChannels {
-                                    if userInChannel.channelId == item.id {
+                                    if userInChannel.userId != CacheRepository.shareInstance.userId && userInChannel.channelId == item.id {
                                         if let date = userInChannel.lastReceive,
                                             date.timeIntervalSince1970 > sentAt.timeIntervalSince1970 {
                                             if let user = users.first(where: {$0.id == userInChannel.userId}) {

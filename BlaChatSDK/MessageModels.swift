@@ -16,24 +16,24 @@ class MessageModels: NSObject {
     
     func sendMessage(channelId: String, type: Int, message: String, customData: [String: Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
         let userId = CacheRepository.shareInstance.userId
-        let tmpId = UUID().uuidString
-        messageLocal.insertMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: customData, isSystemMessage: false) { (messLocal, error) in
+        let localId = UUID().uuidString
+        messageLocal.insertMessage(id: localId, author_id: userId, channel_id: channelId, content: message, type: type, created_at: Date(), updated_at: Date(), sent_at: nil, custom_data: customData, isSystemMessage: false) { (messLocal, error) in
             if let err = error {
                 completion(nil, err)
             } else {
                 let timeNow = Date().timeIntervalSince1970
-                self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: tmpId) { (channel, error) in
+                self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: localId) { (channel, error) in
                 }
                 self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
                     , lastSeen: timeNow, lastReceive: timeNow))
                 self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow, type: type, customData: customData) { (json, error) in
                     if let err = error {
-                        completion(BlaMessage(id: tmpId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
+                        completion(BlaMessage(id: localId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
                     }
                     if let json = json {
                         let dao = BlaMessageDAO(json: json["data"])
                         let mess = BlaMessage(dao: dao)
-                        self.messageLocal.replaceMessage(idLocal: tmpId, message: mess) { (message, error) in
+                        self.messageLocal.replaceMessage(idLocal: localId, message: mess) { (message, error) in
                         }
                         self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: mess.id!) { (result, error) in
                         }

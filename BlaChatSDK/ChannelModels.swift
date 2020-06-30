@@ -95,8 +95,8 @@ class ChannelModels: NSObject {
         }
     }
     
-    func updateChannel(channelId: String, name: String, avatar: String, completion: @escaping (BlaChannel?, Error?) -> Void) {
-        channelRemote.updateChannel(channelId: channelId, name: name, avatar: avatar) { (json, error) in
+    func updateChannel(channelId: String, name: String?, avatar: String?, customData: [String: Any]?, completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelRemote.updateChannel(channelId: channelId, name: name, avatar: avatar, customData: customData) { (json, error) in
             if let json = json {
                 let channel = BlaChannel(dao: BlaChannelDAO(json: json["data"]))
                 completion(channel, error)

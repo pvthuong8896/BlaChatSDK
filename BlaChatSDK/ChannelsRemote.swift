@@ -20,10 +20,10 @@ class ChannelsRemote: BaseRepositoryRemote {
         param["avatar"] = avatar
         if let theJSONData = try?  JSONSerialization.data(
             withJSONObject: customData,
-          options: .prettyPrinted
-          ),
-          let jsonString = String(data: theJSONData,
-                                   encoding: String.Encoding.utf8) {
+            options: .prettyPrinted
+            ),
+            let jsonString = String(data: theJSONData,
+                                    encoding: String.Encoding.utf8) {
             param["custom_data"] = jsonString
         }
         
@@ -105,10 +105,22 @@ class ChannelsRemote: BaseRepositoryRemote {
         }
     }
     
-    func updateChannel(channelId: String, name: String, avatar: String, completion: @escaping (JSON?, Error?) -> Void) {
+    func updateChannel(channelId: String, name: String?, avatar: String?, customData: [String: Any]?, completion: @escaping (JSON?, Error?) -> Void) {
         var param = [String: Any]()
-        param["name"] = name
-        param["avatar"] = avatar
+        if let name = name {
+            param["name"] = name
+        }
+        if let avatar = avatar {
+            param["avatar"] = avatar
+        }
+        if let customData = customData, let theJSONData = try?  JSONSerialization.data(
+            withJSONObject: customData,
+            options: .prettyPrinted
+            ),
+            let jsonString = String(data: theJSONData,
+                                    encoding: String.Encoding.utf8) {
+            param["customData"] = jsonString
+        }
         let request = alamoFireManager.request(
             Constants.domain + "/v1/user/channels/channel/\(channelId)",
             method: .put,
