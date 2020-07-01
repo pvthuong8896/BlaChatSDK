@@ -33,7 +33,7 @@ class CentrifugoController: NSObject {
     
     func connectSocket() {
         let config = CentrifugeClientConfig()
-        let url = "ws://\(Constants.IP):18000/subscribe/connection/websocket?format=protobuf"
+        let url = "ws://\(Constants.IP)/connection/websocket?format=protobuf"
         self.client = CentrifugeClient(url: url, config: config, delegate: self)
         self.client?.setToken(CacheRepository.shareInstance.token)
         self.client?.connect()

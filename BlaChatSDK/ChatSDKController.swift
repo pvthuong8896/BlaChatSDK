@@ -31,7 +31,7 @@ public protocol BlaPresenceListener: NSObjectProtocol {
     func onUpdate(userPresence: [BlaUser])
 }
 
-public class ChatSDK: NSObject {
+public class BlaChatSDK: NSObject {
     private var channelModels: ChannelModels?
     private var messageModels: MessageModels?
     private var userModels: UserModels?
@@ -48,8 +48,8 @@ public class ChatSDK: NSObject {
         super.init()
     }
     
-    public static var shareInstance: ChatSDK = {
-        let instance = ChatSDK()
+    public static var shareInstance: BlaChatSDK = {
+        let instance = BlaChatSDK()
         return instance
     }()
     
@@ -220,6 +220,16 @@ public class ChatSDK: NSObject {
     
     public func deleteChannel(channel: BlaChannel, completion: @escaping (BlaChannel?, Error?) -> Void) {
         channelModels!.deleteChannel(channelId: channel.id!) { (result, error) in
+            if let err = error {
+                completion(nil, err)
+            } else {
+                completion(channel, nil)
+            }
+        }
+    }
+    
+    public func leaveChannel(channel: BlaChannel, completion: @escaping (BlaChannel?, Error?) -> Void) {
+        channelModels!.leaveChannel(channelId: channel.id!) { (result, error) in
             if let err = error {
                 completion(nil, err)
             } else {
@@ -618,10 +628,11 @@ public class ChatSDK: NSObject {
     }
 }
 
-extension ChatSDK: CentrifugoControllerDelegate {
+extension BlaChatSDK: CentrifugoControllerDelegate {
     func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
         let data = String(data: e.data, encoding: .utf8) ?? ""
         let event = JSON.init(parseJSON: data)
+        print("new event ", event)
         self.handleEvent(event: event)
     }
 }

@@ -119,7 +119,7 @@ class ChannelsRemote: BaseRepositoryRemote {
             ),
             let jsonString = String(data: theJSONData,
                                     encoding: String.Encoding.utf8) {
-            param["customData"] = jsonString
+            param["custom_data"] = jsonString
         }
         let request = alamoFireManager.request(
             Constants.domain + "/v1/user/channels/channel/\(channelId)",
@@ -127,6 +127,18 @@ class ChannelsRemote: BaseRepositoryRemote {
             parameters: param,
             encoding: URLEncoding.default,
             headers: self.headersWithoutJson
+        )
+        self.requestManager.startRequest(request) { (json, error) in
+            completion(json, error)
+        }
+    }
+    
+    func leaveChannel(channelId: String, completion: @escaping (JSON?, Error?) -> Void) {
+        let request = alamoFireManager.request(
+            Constants.domain + "/v1/user/channel/leave/\(channelId)",
+            method: .put,
+            encoding: URLEncoding.default,
+            headers: self.headers
         )
         self.requestManager.startRequest(request) { (json, error) in
             completion(json, error)

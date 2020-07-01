@@ -106,6 +106,18 @@ class ChannelModels: NSObject {
         }
     }
     
+    func leaveChannel(channelId: String, completion: @escaping (Bool?, Error?) -> Void) {
+        channelRemote.leaveChannel(channelId: channelId) { (json, error) in
+            guard let _ = json else {
+                completion(nil, error)
+                return
+            }
+            self.channelLocal.removeChannel(channelId: channelId)
+            self.userInChannelLocal.removeAllUserInChannel(channelId: channelId)
+            completion(true, error)
+        }
+    }
+    
     func deleteChannel(channelId: String, completion: @escaping (Bool?, Error?) -> Void) {
         channelRemote.deleteChannel(channelId: channelId) { (json, error) in
             if let err = error {
@@ -258,7 +270,13 @@ class ChannelModels: NSObject {
     }
     
     func removeUserInChannelLocal(channelId: String, userId: String) {
-        self.userInChannelLocal.removeUserInChannel(channelId: channelId, userId: userId)
+        if (userId == CacheRepository.shareInstance.userId) {
+            self.channelLocal.removeChannel(channelId: channelId)
+            self.messageLocal.removeMessageInChannel(channelId: channelId)
+            self.userInChannelLocal.removeAllUserInChannel(channelId: channelId)
+        } else {
+            self.userInChannelLocal.removeUserInChannel(channelId: channelId, userId: userId)
+        }
     }
     
     func updateNumberMessageUnread(channelId: String, isResetCount: Bool, completion: @escaping(BlaChannel?, Error?) -> Void) {

@@ -240,6 +240,15 @@ class MessagesLocal: NSObject {
         }
     }
     
+    func removeMessageInChannel(channelId: String) {
+        do {
+            let filter = tblMessage.filter(self.channel_id == channelId).delete()
+            try DbConnection.shareInstance.connection?.run(filter)
+        } catch {
+            print("remove message error")
+        }
+    }
+    
     func removeMessage(messageId: String) {
         do {
             let filter = tblMessage.filter(self.id == messageId).delete()
