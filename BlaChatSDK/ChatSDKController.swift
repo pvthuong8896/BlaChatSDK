@@ -569,7 +569,7 @@ public class BlaChatSDK: NSObject {
             let channel = BlaChannel(dao: BlaChannelDAO(json: event["payload"]))
             self.channelModels!.saveChannel(channel: channel)
             for item in channelDelegates {
-                item.onNewChannel(channel: channel)
+                item.onUpdateChannel(channel: channel)
             }
             break;
         case "update_content_message":
