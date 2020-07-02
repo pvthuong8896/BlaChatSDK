@@ -99,6 +99,7 @@ class ChannelModels: NSObject {
         channelRemote.updateChannel(channelId: channelId, name: name, avatar: avatar, customData: customData) { (json, error) in
             if let json = json {
                 let channel = BlaChannel(dao: BlaChannelDAO(json: json["data"]))
+                self.channelLocal.saveChannel(channel: channel)
                 completion(channel, error)
             } else {
                 completion(nil, error)
