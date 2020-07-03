@@ -217,7 +217,7 @@ class ChannelsLocal: NSObject {
               ),
               let theJSONText = String(data: theJSONData,
                                        encoding: String.Encoding.utf8) {
-                setter.append(self.custom_data <- custom_data)
+                setter.append(self.custom_data <- theJSONText)
             }
             setter.append(self.updated_at <- Date().timeIntervalSince1970)
             let update = channelFilter.update(setter)

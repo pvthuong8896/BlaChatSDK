@@ -62,12 +62,22 @@ class UsersLocal: NSObject {
         }
     }
     
-    func insertUser(id: String?, name: String?, avatar: String?) {
+    func insertUser(id: String?, name: String?, avatar: String?, customData: [String: Any]?) {
         do {
+            var customDataString = ""
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: customData ?? [String: Any](),
+                options: []
+                ),
+                let jsonString = String(data: theJSONData,
+                                        encoding: String.Encoding.utf8) {
+                customDataString = jsonString
+            }
             let insert = tblUser.insert(
                 self.id <- id,
                 self.name <- name,
-                self.avatar <- avatar
+                self.avatar <- avatar,
+                self.custom_data <- customDataString
             )
             try DbConnection.shareInstance.connection?.run(insert)
         } catch {
@@ -88,6 +98,15 @@ class UsersLocal: NSObject {
             if let lastActiveAt = user.lastActiveAt {
                 setter.append(self.last_active_at <- lastActiveAt.timeIntervalSince1970)
             }
+            if let theJSONData = try?  JSONSerialization.data(
+                withJSONObject: user.customData ?? [String: Any](),
+                options: []
+                ),
+                let jsonString = String(data: theJSONData,
+                                        encoding: String.Encoding.utf8) {
+                setter.append(self.custom_data <- jsonString)
+            }
+            
             if setter.count > 0 {
                 let update = filter.update(setter)
                 try DbConnection.shareInstance.connection?.run(update)
@@ -105,7 +124,7 @@ class UsersLocal: NSObject {
                 if let _ = resultFilter {
                     self.updateUser(user: user)
                 } else {
-                    self.insertUser(id: user.id, name: user.name, avatar: user.avatar)
+                    self.insertUser(id: user.id, name: user.name, avatar: user.avatar, customData: user.customData)
                 }
             }
         } catch {
