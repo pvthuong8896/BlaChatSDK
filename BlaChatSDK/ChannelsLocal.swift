@@ -187,6 +187,7 @@ class ChannelsLocal: NSObject {
 
                     channel.lastMessage = message
                 }
+                print("get channel by id local ", channel.customData)
                 completion(channel, nil)
             }
         } catch {
@@ -279,7 +280,7 @@ class ChannelsLocal: NSObject {
                 let channelFilter = self.tblChannel.filter(self.id == channel.id!)
                 let resultFilter = try DbConnection.shareInstance.connection?.pluck(channelFilter)
                 if let _ = resultFilter {
-                    print("run update channel ", channel)
+                    print("run update channel local ", channel.customData)
                     self.updateChannel(channel: channel)
                 } else {
                     var numberMessage = 0
