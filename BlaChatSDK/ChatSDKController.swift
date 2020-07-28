@@ -46,6 +46,10 @@ public class BlaChatSDK: NSObject {
     private var presenceDelegates = [BlaPresenceListener]()
     override init() {
         super.init()
+        userModels = UserModels()
+        channelModels = ChannelModels(userModel: userModels!)
+        messageModels = MessageModels()
+        appRepository = AppRepository()
     }
     
     public static var shareInstance: BlaChatSDK = {
@@ -56,10 +60,6 @@ public class BlaChatSDK: NSObject {
     public func initBlaChatSDK(userId: String, token: String, completion: @escaping (Bool?, Error?) -> Void) {
         CacheRepository.shareInstance.userId = userId
         CacheRepository.shareInstance.token = token
-        userModels = UserModels()
-        channelModels = ChannelModels(userModel: userModels!)
-        messageModels = MessageModels()
-        appRepository = AppRepository()
         CentrifugoController.shareInstance.delegate = self
         self.getAllUser()
         self.syncMessage()
@@ -190,6 +190,7 @@ public class BlaChatSDK: NSObject {
     
     public func getUsers(userIds: [String], completion: @escaping ([BlaUser]?, Error?) -> Void) {
         self.userModels!.getUserByIds(ids: userIds) { (users, error) in
+
             completion(users, error)
         }
     }
@@ -632,7 +633,6 @@ extension BlaChatSDK: CentrifugoControllerDelegate {
     func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
         let data = String(data: e.data, encoding: .utf8) ?? ""
         let event = JSON.init(parseJSON: data)
-        print("new event ", event)
         self.handleEvent(event: event)
     }
 }
