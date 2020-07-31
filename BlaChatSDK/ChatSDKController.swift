@@ -316,7 +316,14 @@ public class BlaChatSDK: NSObject {
     
     public func searchChannels(query: String, completion: @escaping([BlaChannel]?, Error?) -> Void) {
         self.channelModels?.searchChannels(query: query, completion: { (channels, error) in
-            completion(channels, error)
+            if let channels = channels {
+                self.handleChannel(channels: channels) { (result) in
+                    completion(result, nil)
+                }
+            } else {
+                completion(nil, error)
+            }
+
         })
     }
     
