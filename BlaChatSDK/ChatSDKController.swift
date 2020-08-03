@@ -64,6 +64,7 @@ public class BlaChatSDK: NSObject {
         self.getAllUser()
         self.syncMessage()
         self.getMissingEvent()
+        completion(true, nil)
     }
     
     private func getMissingEvent() {
