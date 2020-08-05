@@ -146,7 +146,8 @@ class ChannelModels: NSObject {
                         for subJson in json["data"].arrayValue {
                             let item = BlaUserInChannel(json: subJson, channelId: channelId)
                             userInChannels.append(item)
-                            self.saveUserInChannel(userInChannel: item)
+                            self.saveUserInChannel(userInChannel: item) { (result, error) in
+                            }
                         }
                         completion(userInChannels, error)
                     } else {
@@ -170,7 +171,8 @@ class ChannelModels: NSObject {
                             for item in subJson["list_member"].arrayValue {
                                 let userInChannel = BlaUserInChannel(json: item, channelId: tmpChannelId)
                                 result.append(userInChannel)
-                                self.saveUserInChannel(userInChannel: userInChannel)
+                                self.saveUserInChannel(userInChannel: userInChannel) { (result, error) in
+                                }
                             }
                         }
                         completion(result, error)
@@ -184,8 +186,10 @@ class ChannelModels: NSObject {
     
     
     
-    func saveUserInChannel(userInChannel: BlaUserInChannel) {
-        self.userInChannelLocal.saveUserInChannel(userInChannel: userInChannel)
+    func saveUserInChannel(userInChannel: BlaUserInChannel, completion: @escaping (Bool?, Error?) -> Void) {
+        self.userInChannelLocal.saveUserInChannel(userInChannel: userInChannel) { (result, error) in
+            completion(result,error)
+        }
     }
     
     func getChannelById(channelId: String, completion: @escaping(BlaChannel?, Error?) -> Void) {
@@ -248,7 +252,8 @@ class ChannelModels: NSObject {
             } else {
                 for subJson in json!["data"].arrayValue {
                     let userInChannel = BlaUserInChannel(json: subJson, channelId: channelId)
-                    self.saveUserInChannel(userInChannel: userInChannel)
+                    self.saveUserInChannel(userInChannel: userInChannel) { (result, error) in
+                    }
                 }
                 completion(true, nil)
             }

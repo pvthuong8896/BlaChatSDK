@@ -96,7 +96,7 @@ class UserInChannelLocal: NSObject {
         }
     }
     
-    func updateUserInChannel(userInChannel: BlaUserInChannel) {
+    func updateUserInChannel(userInChannel: BlaUserInChannel, completion: @escaping(Bool?, Error?) -> Void) {
         do {
             let filter = self.tblUserInChannel.filter(self.user_id==userInChannel.userId && self.channel_id == userInChannel.channelId)
             var setter:[SQLite.Setter] = [SQLite.Setter]()
@@ -109,21 +109,25 @@ class UserInChannelLocal: NSObject {
             if setter.count > 0 {
                 let update = filter.update(setter)
                 try DbConnection.shareInstance.connection?.run(update)
+                completion(true, nil)
             }
         } catch {
             print("Update channel error ", error)
         }
     }
     
-    func saveUserInChannel(userInChannel: BlaUserInChannel) {
+    func saveUserInChannel(userInChannel: BlaUserInChannel, completion: @escaping(Bool?, Error?) -> Void) {
         do {
             try DbConnection.shareInstance.connection?.transaction {
                 let filter = self.tblUserInChannel.filter((self.user_id==userInChannel.userId) && (self.channel_id == userInChannel.channelId))
                 let resultFilter = try DbConnection.shareInstance.connection?.pluck(filter)
                 if let _ = resultFilter {
-                    self.updateUserInChannel(userInChannel: userInChannel)
+                    self.updateUserInChannel(userInChannel: userInChannel) { (result, error) in
+                        completion(result, error)
+                    }
                 } else {
                     self.insertUserInChannel(channel_id: userInChannel.channelId, user_id: userInChannel.userId, last_seen: userInChannel.lastSeen, last_receive: userInChannel.lastReceive) { (result, error) in
+                        completion(true, nil)
                     }
                 }
             }

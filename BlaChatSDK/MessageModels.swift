@@ -25,7 +25,8 @@ class MessageModels: NSObject {
                 self.channelLocal.updateLastMessageChannel(channelId: channelId, messageId: localId) { (channel, error) in
                 }
                 self.userInChannelLocal.saveUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId
-                    , lastSeen: timeNow, lastReceive: timeNow))
+                    , lastSeen: timeNow, lastReceive: timeNow)) { (result, error) in
+                }
                 self.messageRemote.sendMessage(channelId: channelId, message: message, sentAt: timeNow, type: type, customData: customData) { (json, error) in
                     if let err = error {
                         completion(BlaMessage(id: localId, author_id: userId, channel_id: channelId, content: message, type: type, is_system_message: false, created_at: timeNow, updated_at: timeNow, sent_at: nil, custom_data: nil), err)
@@ -109,7 +110,8 @@ class MessageModels: NSObject {
     func markReceiveMessage(channelId: String, messageId: String, completion: @escaping(Bool?, Error?) -> Void) {
         let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
-        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: nil, lastReceive: timeNow))
+        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: nil, lastReceive: timeNow)) { (result, error) in
+        }
         self.getMessageById(messageId: messageId) { (message, error) in
             if let message = message, message.authorId != CacheRepository.shareInstance.userId {
                 self.messageRemote.markReceiveMessage(channelId: channelId, messageId: messageId, receiveId: message.authorId!) { (json, error) in
@@ -126,7 +128,8 @@ class MessageModels: NSObject {
     func markSeenMessage(channelId: String, messageId: String, completion: @escaping(Bool?, Error?) -> Void) {
         let userId = CacheRepository.shareInstance.userId
         let timeNow = Date().timeIntervalSince1970
-        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: timeNow, lastReceive: timeNow))
+        self.userInChannelLocal.updateUserInChannel(userInChannel: BlaUserInChannel(channelId: channelId, userId: userId, lastSeen: timeNow, lastReceive: timeNow)) { (result, erro) in
+        }
         self.getMessageById(messageId: messageId) { (message, error) in
             if let message = message, message.authorId != CacheRepository.shareInstance.userId {
                 self.messageRemote.markSeenMessage(channelId: channelId, messageId: messageId, receiveId: message.authorId!) { (json, error) in

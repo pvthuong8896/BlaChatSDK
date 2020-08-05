@@ -201,7 +201,7 @@ public class BlaChatSDK: NSObject {
             if let err = error {
                 completion(nil, err)
             } else {
-                self.addInfoMessages(messages: messages ?? []) { (result) in
+                self.handleMessage(messages: messages ?? []) { (result) in
                     completion(result, error)
                 }
             }
@@ -274,7 +274,7 @@ public class BlaChatSDK: NSObject {
     public func createMessage(content: String, channelId: String, type: BlaMessageType, customData: [String : Any]?, completion: @escaping(BlaMessage?, Error?) -> Void) {
         messageModels!.sendMessage(channelId: channelId, type: type.rawValue, message: content, customData: customData) { (message, error) in
             if let message = message {
-                self.addInfoMessages(messages: [message]) { (result) in
+                self.handleMessage(messages: [message]) { (result) in
                     completion(result[0], nil)
                 }
             } else {
@@ -437,15 +437,13 @@ public class BlaChatSDK: NSObject {
         }
     }
     
-    private func addInfoMessages(messages: [BlaMessage], completion: @escaping ([BlaMessage]) -> Void) {
+    private func handleMessage(messages: [BlaMessage], completion: @escaping ([BlaMessage]) -> Void) {
         if messages.count > 0 {
             self.channelModels!.getUserInChannel(channelId: messages[0].channelId!) { (result, error) in
                 if let userInChannels = result {
                     var userIds = [String]()
-                    for item in messages {
-                        if userIds.firstIndex(of: item.authorId!) == nil {
-                            userIds.append(item.authorId!)
-                        }
+                    for item in userInChannels {
+                        userIds.append(item.userId ?? "")
                     }
                     self.userModels!.getUserByIds(ids: userIds) { (users, error) in
                         for item in messages {
@@ -506,7 +504,7 @@ public class BlaChatSDK: NSObject {
                     }
                 }
             }
-            self.addInfoMessages(messages: [message]) { (result) in
+            self.handleMessage(messages: [message]) { (result) in
                 if result.count > 0 {
                     for item in self.messageDelegates {
                         item.onNewMessage(message: result[0])
@@ -544,17 +542,19 @@ public class BlaChatSDK: NSObject {
             }
             break;
         case "mark_seen":
+            print("mark seen ", event["payload"])
             self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
                     let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: event["payload"]["time"].doubleValue, lastReceive:  event["payload"]["time"].doubleValue)
-                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
-                    self.addInfoMessages(messages: [mess]) { (messages) in
-                        self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
-                            for item in self.messageDelegates {
-                                item.onUserSeen(message: messages[0], user: user, seenAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel, completion: { (result, error) in
+                        self.handleMessage(messages: [mess]) { (messages) in
+                            self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
+                                for item in self.messageDelegates {
+                                    item.onUserSeen(message: messages[0], user: user, seenAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                                }
                             }
                         }
-                    }
+                    })
                 }
             }
             break;
@@ -563,14 +563,15 @@ public class BlaChatSDK: NSObject {
             self.messageModels!.getMessageById(messageId: event["payload"]["message_id"].stringValue) { (result, error) in
                 if let mess = result {
                     let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: event["payload"]["actor_id"].stringValue, lastSeen: nil, lastReceive:  event["payload"]["time"].doubleValue)
-                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
-                    self.addInfoMessages(messages: [mess]) { (messages) in
-                        self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
-                            for item in self.messageDelegates {
-                                item.onUserReceive(message: messages[0], user: user, receivedAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                    self.channelModels?.saveUserInChannel(userInChannel: userInChannel, completion: { (result, error) in
+                        self.handleMessage(messages: [mess]) { (messages) in
+                            self.userModels!.getUserById(user_id: event["payload"]["actor_id"].stringValue) { (user) in
+                                for item in self.messageDelegates {
+                                    item.onUserReceive(message: messages[0], user: user, receivedAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
+                                }
                             }
                         }
-                    }
+                    })
                 }
             }
             break;
@@ -621,7 +622,8 @@ public class BlaChatSDK: NSObject {
                 if let channel = channel {
                     for item in event["payload"]["user_ids"].arrayValue {
                         let userInChannel = BlaUserInChannel(channelId: event["payload"]["channel_id"].stringValue, userId: item.stringValue, lastSeen: channel.createdAt?.timeIntervalSince1970, lastReceive: channel.createdAt?.timeIntervalSince1970)
-                        self.channelModels?.saveUserInChannel(userInChannel: userInChannel)
+                        self.channelModels?.saveUserInChannel(userInChannel: userInChannel, completion: { (result, error) in
+                        })
                         self.userModels!.getUserById(user_id: item.stringValue) { (user) in
                             for delegate in self.channelDelegates {
                                 delegate.onMemberLeave(channel: channel, user: user)
@@ -641,6 +643,7 @@ extension BlaChatSDK: CentrifugoControllerDelegate {
     func onPublish(_ sub: CentrifugeSubscription, _ e: CentrifugePublishEvent) {
         let data = String(data: e.data, encoding: .utf8) ?? ""
         let event = JSON.init(parseJSON: data)
+        print("new event ", event)
         self.handleEvent(event: event)
     }
 }
