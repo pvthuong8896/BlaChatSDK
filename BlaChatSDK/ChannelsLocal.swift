@@ -97,7 +97,7 @@ class ChannelsLocal: NSObject {
             if let lastId = lastId {
                 let rowLastChannel = try DbConnection.shareInstance.connection?.pluck(tblChannel.filter(self.id == lastId))
                 if let rowLastChannel = rowLastChannel, let rowUpdatedAt = rowLastChannel[self.updated_at] {
-                    filter = tblChannel.limit(limit).filter(tblChannel[updated_at] < rowUpdatedAt)
+                    filter = tblChannel.limit(limit).filter(tblChannel[updated_at] < rowUpdatedAt).order(updated_at.desc)
                 }
             }
             let channels = try

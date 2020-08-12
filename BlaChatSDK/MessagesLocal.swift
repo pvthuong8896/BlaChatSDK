@@ -141,7 +141,7 @@ class MessagesLocal: NSObject {
     
     func getMessages(channel_id: String, limit: Int, lastId: String?, completion: @escaping([BlaMessage]?, Error?) -> Void) {
         do {
-            var filter = tblMessage.filter(self.channel_id == channel_id).order(self.created_at.desc)
+            var filter = tblMessage.filter(self.channel_id == channel_id)
             if let lastId = lastId {
                 let rowLastMessage = try DbConnection.shareInstance.connection?.pluck(tblMessage.filter(self.id == lastId))
                 if let rowLastMessage = rowLastMessage, let rowCreatedAt = rowLastMessage[self.created_at] {
