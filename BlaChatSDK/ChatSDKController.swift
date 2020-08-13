@@ -530,13 +530,24 @@ public class BlaChatSDK: NSObject {
             break;
         case "new_channel":
             let channel = BlaChannel(dao: BlaChannelDAO(json: event["payload"]));
-            channelModels!.saveChannel(channel: channel)
-            self.getUserInChannel(channelId: channel.id!) { (result, error) in
-            }
-            self.handleChannel(channels: [channel]) { (result) in
-                if result.count > 0 {
-                    for item in self.channelDelegates {
-                        item.onNewChannel(channel: result[0])
+            self.getUserInChannel(channelId: channel.id!) { (users, error) in
+                guard let users = users else {
+                    self.channelModels!.saveChannel(channel: channel)
+                    return
+                }
+                if channel.type == BlaChannelType.DIRECT {
+                    let user = users.first(where: {$0.id != CacheRepository.shareInstance.userId})
+                    if (user != nil) {
+                        channel.name = user?.name
+                        channel.avatar = user?.avatar
+                    }
+                }
+                self.channelModels!.saveChannel(channel: channel)
+                self.handleChannel(channels: [channel]) { (result) in
+                    if result.count > 0 {
+                        for item in self.channelDelegates {
+                            item.onNewChannel(channel: result[0])
+                        }
                     }
                 }
             }
