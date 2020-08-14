@@ -25,6 +25,8 @@ public protocol BlaChannelDelegate: NSObjectProtocol {
     func onTyping(channel: BlaChannel, user: BlaUser, type: BlaEventType)
     func onMemberJoin(channel: BlaChannel, user: BlaUser)
     func onMemberLeave(channel: BlaChannel, user: BlaUser)
+    func onUserReceiveMessage(channel: BlaChannel, user: BlaUser, message: BlaMessage)
+    func onUserSeenMessage(channel: BlaChannel, user: BlaUser, message: BlaMessage)
 }
 
 public protocol BlaPresenceListener: NSObjectProtocol {
@@ -563,6 +565,14 @@ public class BlaChatSDK: NSObject {
                                 for item in self.messageDelegates {
                                     item.onUserSeen(message: messages[0], user: user, seenAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                                 }
+                                self.channelModels?.getChannelById(channelId: event["payload"]["channel_id"].stringValue, completion: { (channel, error) in
+                                    guard let channel = channel else {
+                                        return
+                                    }
+                                    for item in self.channelDelegates {
+                                        item.onUserSeenMessage(channel: channel, user: user, message: messages[0])
+                                    }
+                                })
                             }
                         }
                     })
@@ -580,6 +590,14 @@ public class BlaChatSDK: NSObject {
                                 for item in self.messageDelegates {
                                     item.onUserReceive(message: messages[0], user: user, receivedAt: Date.init(timeIntervalSince1970: event["payload"]["time"].doubleValue))
                                 }
+                                self.channelModels?.getChannelById(channelId: event["payload"]["channel_id"].stringValue, completion: { (channel, error) in
+                                    guard let channel = channel else {
+                                        return
+                                    }
+                                    for item in self.channelDelegates {
+                                        item.onUserReceiveMessage(channel: channel, user: user, message: messages[0])
+                                    }
+                                })
                             }
                         }
                     })
